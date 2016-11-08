@@ -13,18 +13,65 @@
       
       
         <!--grid-->
-        <inline url="scene/grid_20x20.x3d"></inline>
+        <transform rotation="1 0 0 -1.57079632679">
+            <Shape isPickable="false">
+                <Appearance>
+                    <Material diffuseColor='0.0 0.0 0.0' specularColor='0.0 0.0 0.0' emissiveColor='0.2 0.2 0.2'></Material>                    
+                </Appearance>
+                <Plane id="gridPlane" solid="false" size='20 20' primType='LINES' subdivision='20 20'>
+                </Plane>
+            </Shape>
+            <Shape isPickable="false">
+                <Appearance>
+                    <Material></Material>                    
+                </Appearance>
+                <IndexedLineSet coordIndex="0 1 2 3 0 -1">
+                    <Coordinate id="gridBordersCoordNode" point="-10.0 -10.0 0.0, -10.0 10.0 0.0 ,  10.0 10.0 0.0, 10.0 -10.0 0.0"/>
+                    <Color color="0.4 0.4 0.4, 0.4 0.4 0.4, 0.4 0.4 0.4, 0.4 0.4 0.4"/>
+                </IndexedLineSet>
+            </Shape>
+        </transform>
         
         
         <!--axes-->
         <transform translation="0 0.002 0.0">
-            <inline url="scene/axis.x3d"></inline>
-        </transform>
-        
-        
-        <!--models-->
-        <transform translation="-2 0 1" onmousedown="startDragging(this);">
-            <inline url="scene/suzanne-ao-bg.x3d"></inline>
+<group>
+
+			<!-- X arrow and label -->
+            <Shape isPickable="false" DEF="AXIS_LINE_X">
+                <IndexedLineSet index="0 1 -1">
+                    <Coordinate point="0 0 0.001, 15 0 0.001" color="1 0 0, 1 0 0"></Coordinate>
+                </IndexedLineSet>
+
+                <Appearance DEF='Red'>
+                    <Material diffuseColor="0 0 0" emissiveColor='1 0 0'></Material>
+                    <LineProperties linewidthScaleFactor="2.0"></LineProperties>
+                </Appearance>
+            </Shape>
+			<!-- Y arrow and label -->                            
+            <Shape isPickable="false" DEF="AXIS_LINE_Y">
+            	<IndexedLineSet index="0 1 -1">
+            	    <Coordinate point="0 0 0.001, 0 15 0.001" color="0 1 0, 0 1 0"></Coordinate>
+            	</IndexedLineSet>
+
+            	<Appearance DEF='Green'>
+                    <Material diffuseColor="0 0 0" emissiveColor='0 1 0'></Material>
+                    <LineProperties linewidthScaleFactor="2.0"></LineProperties>
+                </Appearance>
+			</Shape>
+			<!-- Z arrow and label -->
+            <Shape isPickable="false" DEF="AXIS_LINE_Z">
+                <IndexedLineSet index="0 1 -1" >
+                    <Coordinate point="0 0 0.001, 0 0 15" color="0 0 1, 0 0 1"></Coordinate>
+                </IndexedLineSet>
+
+                <Appearance DEF='Blue'>
+                    <Material diffuseColor="0 0 0" emissiveColor='0 0 1'></Material>
+                    <LineProperties linewidthScaleFactor="2.0"></LineProperties>
+                </Appearance>
+            </Shape>
+
+		</group>
         </transform>
         
         <transform translation="0 1 -6" onmousedown="startDragging(this);">
