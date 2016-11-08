@@ -1,4 +1,4 @@
-# Hoc462
+# Hoc462 License: `Do not use my code. If you use, you'll go to jail (will change to CC BY-NC in future, now not yet)`
 Learn in a 3D room. See the pictures, books inside the room and answer the questions! All rooms are USER-GENERATED content.
 ===
 # There is nothing inside yet. I have to finish this shit.
