@@ -2,16 +2,51 @@
 <link href="x3dom.css" rel="stylesheet" />
 <script src="x3dom.js"></script>
 <script src="jquery.js"></script>
-<x3d>
-    <scene>
-        <shape>
-            <appearance>
-                <material diffuseColor='1 0 0'></material>
-            </appearance>
-            <box></box>
-        </shape>
-    </scene>
-</x3d>
+    <x3d id='x3dElement' style='width:100%; height:100%; border:0'        
+        onmouseup  ="stopDragging();"
+        onmousemove="mouseMoved(event);">
+      <scene> 
+      
+        <!--view and navigation-->        
+        <viewpoint position="5.09349 5.61586 13.27088" orientation="-0.71805 0.68885 0.09947 0.51301"></viewpoint>	
+        <navigationInfo id="navInfo" type='"EXAMINE" "ANY"' typeParams="-0.4, 60, 0.5, 1.55"></navigationInfo>
+      
+      
+        <!--grid-->
+        <inline url="scene/grid_20x20.x3d"></inline>
+        
+        
+        <!--axes-->
+        <transform translation="0 0.002 0.0">
+            <inline url="scene/axis.x3d"></inline>
+        </transform>
+        
+        
+        <!--models-->
+        <transform translation="-2 0 1" onmousedown="startDragging(this);">
+            <inline url="scene/suzanne-ao-bg.x3d"></inline>
+        </transform>
+        
+        <transform translation="0 1 -6" onmousedown="startDragging(this);">
+            <shape>
+                <appearance>
+                    <material diffuseColor="1 0.5 0" specularColor="0.3 0.3 0.3"></material>
+                </appearance>
+                <cone></cone>
+            <shape>
+        </transform>
+        
+        <transform translation="4 0 0" onmousedown="startDragging(this);">
+            <shape>
+                <appearance>
+                    <material diffuseColor="0 0.7 0.5" specularColor="0.3 0.3 0.3"></material>
+                </appearance>
+                <sphere></sphere>
+            <shape>
+        </transform>       
+        
+      </scene>
+    </x3d>
 <style>
     x3d {
         position: absolute;
