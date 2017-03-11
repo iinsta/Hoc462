@@ -1,234 +1,293 @@
+<!DOCTYPE html>
 <meta charset="utf-8">
-<link href="x3dom.css" rel="stylesheet" />
-<script src="x3dom.js"></script>
-<script src="jquery.js"></script>
-<script>
-function Hoc462(scene) {
+<html>
+	<head>
+		<title>Hoc462</title>
+		<!-- Include stylesheets only here -->
+	</head>
+	<body>
+		<canvas id="c" width="640" height="640"></canvas>
+		<canvas id="minimap" width="640" height="640"></canvas>
+		<!-- Please include JS libraries below this line -->
+		<script>
+/*
+| 0: cast to integer
+TODO: WTF is CAMERA PLANE?
+LINKS:
+CONSUME THOSE
+http://lodev.org/cgtutor/raycasting.html
+http://lodev.org/cgtutor/raycasting2.html
+http://lodev.org/cgtutor/raycasting3.html
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+*/
+var ctx = c.getContext("2d");
+var mapCtx = minimap.getContext("2d");
+function canvasDebugger(contexts) {
+	return contexts.map(_=>{
+		var nativeBeginPath = _.beginPath.bind(_);
+		var newBeginPath = (function() {
+			this[1].watchDog = setTimeout(_=>console.log('Someone forgot to close path, fill or stroke'), 200);
+			this[0]();
+		}).bind([nativeBeginPath, _]);
+		_.beginPath = newBeginPath;
+		function clearWatchDogTimer() {
+			clearTimeout(this[1].watchDog);
+			this[0]();
+		}
+		var nativeFill = _.fill.bind(_);
+		var newFill = clearWatchDogTimer.bind([nativeFill,_]);
+		_.fill = newFill;
+		var nativeStroke = _.stroke.bind(_);
+		var newStroke = clearWatchDogTimer.bind([nativeStroke,_]);
+		_.stroke = newStroke;
+		var nativeClosePath = _.closePath.bind(_);
+		var newClosePath = clearWatchDogTimer.bind([nativeClosePath,_]);
+		_.closePath = newClosePath;
+	});
 }
-// api test
-Hoc462($("scene")).addBox()
-	          .addCylinder()
-	          .addSphere()
-	          .delete();
-</script>
-    <x3d id='x3dElement' style='width:100%; height:100%; border:0'        
-        onmouseup  ="stopDragging();"
-        onmousemove="mouseMoved(event);">
-      <scene> 
-      
-        <!--view and navigation-->        
-        <viewpoint position="5.09349 5.61586 13.27088" orientation="-0.71805 0.68885 0.09947 0.51301"></viewpoint>	
-        <navigationInfo id="navInfo" type='"EXAMINE" "ANY"' typeParams="-0.4, 60, 0.5, 1.55"></navigationInfo>
-      
-      
-        <!--grid-->
-        <transform rotation="1 0 0 -1.57079632679">
-            <Shape isPickable="false">
-                <Appearance>
-                    <Material diffuseColor='0.0 0.0 0.0' specularColor='0.0 0.0 0.0' emissiveColor='0.2 0.2 0.2'></Material>                    
-                </Appearance>
-                <Plane id="gridPlane" solid="false" size='20 20' primType='LINES' subdivision='20 20'>
-                </Plane>
-            </Shape>
-            <Shape isPickable="false">
-                <Appearance>
-                    <Material></Material>                    
-                </Appearance>
-                <IndexedLineSet coordIndex="0 1 2 3 0 -1">
-                    <Coordinate id="gridBordersCoordNode" point="-10.0 -10.0 0.0, -10.0 10.0 0.0 ,  10.0 10.0 0.0, 10.0 -10.0 0.0"/>
-                    <Color color="0.4 0.4 0.4, 0.4 0.4 0.4, 0.4 0.4 0.4, 0.4 0.4 0.4"/>
-                </IndexedLineSet>
-            </Shape>
-        </transform>
-        
-        
-        <!--axes-->
-        <transform translation="0 0.002 0.0">
-<group>
-
-			<!-- X arrow and label -->
-            <Shape isPickable="false" DEF="AXIS_LINE_X">
-                <IndexedLineSet index="0 1 -1">
-                    <Coordinate point="0 0 0.001, 15 0 0.001" color="1 0 0, 1 0 0"></Coordinate>
-                </IndexedLineSet>
-
-                <Appearance DEF='Red'>
-                    <Material diffuseColor="0 0 0" emissiveColor='1 0 0'></Material>
-                    <LineProperties linewidthScaleFactor="2.0"></LineProperties>
-                </Appearance>
-            </Shape>
-			<!-- Y arrow and label -->                            
-            <Shape isPickable="false" DEF="AXIS_LINE_Y">
-            	<IndexedLineSet index="0 1 -1">
-            	    <Coordinate point="0 0 0.001, 0 15 0.001" color="0 1 0, 0 1 0"></Coordinate>
-            	</IndexedLineSet>
-
-            	<Appearance DEF='Green'>
-                    <Material diffuseColor="0 0 0" emissiveColor='0 1 0'></Material>
-                    <LineProperties linewidthScaleFactor="2.0"></LineProperties>
-                </Appearance>
-			</Shape>
-			<!-- Z arrow and label -->
-            <Shape isPickable="false" DEF="AXIS_LINE_Z">
-                <IndexedLineSet index="0 1 -1" >
-                    <Coordinate point="0 0 0.001, 0 0 15" color="0 0 1, 0 0 1"></Coordinate>
-                </IndexedLineSet>
-
-                <Appearance DEF='Blue'>
-                    <Material diffuseColor="0 0 0" emissiveColor='0 0 1'></Material>
-                    <LineProperties linewidthScaleFactor="2.0"></LineProperties>
-                </Appearance>
-            </Shape>
-
-		</group>
-        </transform>
-        
-        <transform translation="0 1 -6" onmousedown="startDragging(this);">
-            <shape>
-                <appearance>
-                    <material diffuseColor="1 0.5 0" specularColor="0.3 0.3 0.3"></material>
-                </appearance>
-                <cone></cone>
-            <shape>
-        </transform>
-        
-        <transform translation="4 0 0" onmousedown="startDragging(this);">
-            <shape>
-                <appearance>
-                    <material diffuseColor="0 0.7 0.5" specularColor="0.3 0.3 0.3"></material>
-                </appearance>
-                <sphere></sphere>
-            <shape>
-        </transform>       
-        
-      </scene>
-    </x3d>
-<style>
-    x3d {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        border: none;
-    }
-</style>
-<script>
-        var cellSize = 1.0;
-        
-        var lastMouseX = -1;
-        var lastMouseY = -1;
-        
-        var draggedTransformNode = null;
-        
-        //vectors in 3D world space, associated to mouse x/y movement on the screen
-        var draggingUpVec    = null;
-        var draggingRightVec = null;
-        
-        var unsnappedDragPos = null;
-	var snap = false;
-        
-        //------------------------------------------------------------------------------------------------------------------
-        
-        var mouseMoved = function(event)
-        {
-            //offsetX / offsetY polyfill for FF
-            var target = event.target || event.srcElement;
-            var rect = target.getBoundingClientRect();
-            event.offsetX = event.clientX - rect.left;
-            event.offsetY = event.clientY - rect.top;
-        
-            if (lastMouseX === -1)
-            {
-                lastMouseX = event.offsetX;
-            }
-            if (lastMouseY === -1)
-            {
-                lastMouseY = event.offsetY;
-            }
-
-            if (draggedTransformNode)
-            {
-               dragObject(event.offsetX - this.lastMouseX, event.offsetY - this.lastMouseY);
-            }
-
-            lastMouseX = event.offsetX;
-            lastMouseY = event.offsetY;
-        };
-        
-        //------------------------------------------------------------------------------------------------------------------
-        
-        var startDragging = function(transformNode)
-        {        
-            //disable navigation during dragging
-            document.getElementById("navInfo").setAttribute("type", '"NONE"');
-                       
-            draggedTransformNode = transformNode;            
-            unsnappedDragPos     = new x3dom.fields.SFVec3f.parse(transformNode.getAttribute("translation"));
-            
-            
-            //compute the dragging vectors in world coordinates
-            //(since navigation is disabled, those will not change until dragging has been finished)
-
-            //get the viewer's 3D local frame
-            var x3dElem  = document.getElementById("x3dElement");
-            var vMatInv  = x3dElem.runtime.viewMatrix().inverse();            
-            var viewDir  = vMatInv.multMatrixVec(new x3dom.fields.SFVec3f(0.0, 0.0, -1.0));
-            
-            //use the viewer's up-vector and right-vector
-            draggingUpVec    = vMatInv.multMatrixVec(new x3dom.fields.SFVec3f(0.0, 1.0,  0.0));;
-            draggingRightVec = viewDir.cross(this.draggingUpVec);   
-
-            
-            //project a world unit to the screen to get its size in pixels            
-            var x3dElem  = document.getElementById("x3dElement");
-            var p1 = x3dElem.runtime.calcCanvasPos(unsnappedDragPos.x, unsnappedDragPos.y, unsnappedDragPos.z);
-            var p2 = x3dElem.runtime.calcCanvasPos(unsnappedDragPos.x + draggingRightVec.x,
-                                                   unsnappedDragPos.y + draggingRightVec.y,
-                                                   unsnappedDragPos.z + draggingRightVec.z)
-            var magnificationFactor = 1.0 / Math.abs(p1[0] - p2[0]);
-            
-            //scale up vector and right vector accordingly            
-            draggingUpVec    = draggingUpVec.multiply(magnificationFactor);
-            draggingRightVec = draggingRightVec.multiply(magnificationFactor);            
-        };
-
-        //------------------------------------------------------------------------------------------------------------------
-
-        var dragObject = function(dx, dy)
-        {
-            //scale up vector and right vector accordingly            
-            var offsetUp    = draggingUpVec.multiply(-dy);
-            var offsetRight = draggingRightVec.multiply(dx);
-
-            unsnappedDragPos = unsnappedDragPos.add(offsetUp).add(offsetRight);
-
-            var snappedDragPos;
-
-            //if enabled, take grid snapping into account
-            if (snap)
-            {
-                snappedDragPos = new x3dom.fields.SFVec3f(cellSize * Math.ceil(unsnappedDragPos.x / cellSize),
-                                                          cellSize * Math.ceil(unsnappedDragPos.y / cellSize),
-                                                          cellSize * Math.ceil(unsnappedDragPos.z / cellSize));
-                draggedTransformNode.setAttribute("translation", snappedDragPos.toString());
-            }
-            else
-            {
-                draggedTransformNode.setAttribute("translation", unsnappedDragPos.toString());
-            }
-        }
-
-        //------------------------------------------------------------------------------------------------------------------
-
-        var stopDragging = function()
-        {
-            draggedTransformNode = null;                
-            draggingUpVec        = null;
-            draggingRightVec     = null;
-            unsnappedDragPos     = null;
-            
-            //re-enable navigation after dragging
-            document.getElementById("navInfo").setAttribute("type", '"EXAMINE" "ANY"');
-        };  
-</script>
+canvasDebugger([ctx, mapCtx]);
+var MINI_MAP_SCALE = 8;
+var OUTSIDE_THE_MAP = -1;
+var IS_WALL = 1;
+var NO_HIT = 0;
+var IS_HIT = 1;
+var X_HIT = 0;
+var Y_HIT = 1;
+var UP = 1;
+var DOWN = -1;
+var LEFT = -1;
+var RIGHT = 1;
+var colorList = {
+	'1': [255, 0, 0]
+};
+function drawMiniMap() {
+	mapCtx.fillStyle = "white";
+	mapCtx.fillRect(0, 0, minimap.width, minimap.height);
+	for (var y = 0; y < player.map.height; y++)
+		for (var x = 0; x < player.map.width; x++)
+			if (player.map.get(x, y) == IS_WALL) {
+				mapCtx.fillStyle = "rgb(200, 200, 200)";
+				mapCtx.fillRect(
+					x * MINI_MAP_SCALE,
+					y * MINI_MAP_SCALE,
+					MINI_MAP_SCALE, MINI_MAP_SCALE
+				);
+			}
+	updateMiniMap();
+}
+function updateMiniMap() {
+	mapCtx.fillStyle = "black";
+	mapCtx.fillRect(
+		player.x * MINI_MAP_SCALE - 2,
+		player.y * MINI_MAP_SCALE - 2,
+		4, 4
+	);
+	mapCtx.beginPath();
+	mapCtx.moveTo(player.x * MINI_MAP_SCALE, player.y * MINI_MAP_SCALE);
+	mapCtx.lineTo(
+		(player.x + Math.cos(player.rot) * 4) * MINI_MAP_SCALE,
+		(player.y + Math.sin(player.rot) * 4) * MINI_MAP_SCALE
+	);
+	mapCtx.stroke();
+}
+function Player() {
+	this.x = 0;
+	this.y = 0;
+	this.dirX = -1
+	this.dirY = 0; 
+	this.planeX = 0
+	this.planeY = 0.66;
+	this.dir = 0;
+	this.rot = 0;
+	this.cosRot = Math.cos(0);
+	this.sinRot = Math.sin(0);
+	this.speed = 0;
+	this.moveSpeed = 0.4;
+	this.rotSpeed = 6 * Math.PI / 180;
+	this.map = null;
+	return this;
+};
+Player.prototype = {
+	move: function() {
+		var moveStep = this.speed * this.moveSpeed;
+		this.rot += this.dir * this.rotSpeed;
+		var newX = this.x + Math.cos(player.rot) * moveStep;
+		var newY = this.y + Math.sin(player.rot) * moveStep;
+		var currentMapBlock = this.map.get(newX|0, newY|0);
+		if (currentMapBlock === OUTSIDE_THE_MAP || currentMapBlock > 0) {
+			this
+				.stopMoving("up")
+				.stopMoving("down")
+				.stopMoving("left")
+				.stopMoving("right");
+			return;
+		};
+		this.x = newX;
+		this.y = newY;
+		var oldDirX = this.dirX;
+		this.dirX = this.dirX * Math.cos(this.dir * this.rotSpeed) - this.dirY * Math.sin(this.dir * this.rotSpeed);
+		this.dirY = oldDirX * Math.sin(this.dir * this.rotSpeed) + this.dirY * Math.cos(this.dir * this.rotSpeed);
+		var oldPlaneX = this.planeX;
+		this.planeX = this.planeX * Math.cos(this.dir * this.rotSpeed) - this.planeY * Math.sin(this.dir * this.rotSpeed);
+		this.planeY = oldPlaneX * Math.sin(this.dir * this.rotSpeed) + this.planeY * Math.cos(this.dir * this.rotSpeed);
+		return this;
+	},
+	startMoving: function(direction) {
+		switch (direction) {
+			case "up":
+				this.speed = UP; break;
+			case "down":
+				this.speed = DOWN; break;
+			case "left":
+				this.dir = LEFT; break;
+			case "right":
+				this.dir = RIGHT; break;
+		}
+		this.move();
+		return this;
+	},
+	stopMoving: function(direction) {
+		switch (direction) {
+			case "up":
+			case "down":
+				this.speed = 0; break;
+			case "left":
+			case "right":
+				this.dir = 0; break;
+		}
+		return this;
+	},
+	castRays: function() {
+		for (var x = 0; x < c.width; x++) {
+			var cameraX = 2 * x / c.width - 1;
+			var rayPosX = this.x;
+			var rayPosY = this.y;
+			var rayDirX = this.dirX + this.planeX * cameraX;
+			var rayDirY = this.dirY + this.planeY * cameraX;
+			var mapX = rayPosX | 0;
+			var mapY = rayPosY | 0
+			var deltaDistX = Math.sqrt(1 + (rayDirY * rayDirY) / (rayDirX * rayDirX));
+			var deltaDistY = Math.sqrt(1 + (rayDirX * rayDirX) / (rayDirY * rayDirY));
+			var stepX = 0;
+			var stepY = 0;
+			var sideDistX = 0;
+			var sideDistY = 0;
+			var wallDistance = 0;
+			var side = 0; // x wall hit or y wall hit?
+			if (rayDirX < 0) {
+				stepX = -1;
+				sideDistX = (rayPosX - mapX) * deltaDistX;
+			} else {
+				stepX = 1;
+				sideDistX = (mapX + 1.0 - rayPosX) * deltaDistX;
+			}
+			if (rayDirY < 0) {
+				stepY = -1;
+				sideDistY = (rayPosY - mapY) * deltaDistY;
+			} else {
+				stepY = 1;
+				sideDistY = (mapY + 1.0 - rayPosY) * deltaDistY;
+			}
+			var hit = NO_HIT;
+			while (hit === NO_HIT) {
+				if (sideDistX < sideDistY) {
+					sideDistX += deltaDistX;
+					mapX += stepX;
+					side = X_HIT;
+				} else {
+					sideDistY += deltaDistY;
+					mapY += stepY;
+					side = Y_HIT;	
+				}
+				if (this.map.get(mapX, mapY) > 0) {hit = IS_HIT;}
+			}
+			if (side === X_HIT) {
+				wallDistance = (mapX - rayPosX + (1 - stepX) / 2) / rayDirX;
+			} else {
+				wallDistance = (mapY - rayPosY + (1 - stepY) / 2) / rayDirY;
+			}
+			var lineHeight = (c.height / wallDistance) | 0;
+			var drawStart = -lineHeight / 2 + c.height / 2;
+			if (drawStart < 0) {
+				drawStart = 0;
+			}
+			var drawEnd = lineHeight / 2 + c.height / 2;
+			if (drawEnd >= c.height) {
+				drawEnd = c.height - 1;
+			}
+			var color = colorList[this.map.get(mapX, mapY)];
+			if (side === Y_HIT) {color = color.map(_ => (_ / 2) | 0) }
+			ctx.strokeStyle = "rgb("+color[0]+", "+color[1]+", "+color[2]+")";
+			ctx.beginPath();
+			ctx.moveTo(x, drawStart);
+			ctx.lineTo(x, drawEnd);
+			ctx.stroke();
+		}
+	}
+};
+function Map(wallGrid) {
+	this.wallGrid = wallGrid;
+	this.height = wallGrid.length;
+	this.width = this.height === 0 ? 0 : wallGrid[0].length;
+}
+Map.prototype.get = function(x, y) {
+	x = x | 0;
+	y = y | 0;
+	var currentMapBlock = this.wallGrid[y][x];
+	if (currentMapBlock === undefined) return OUTSIDE_THE_MAP;
+	return currentMapBlock;
+}
+var player = new Player();
+player.map = new Map([
+  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+  [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+  [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+  [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+  [1,0,0,0,0,0,1,1,1,1,1,0,0,0,0,1,0,1,0,1,0,0,0,1],
+  [1,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1],
+  [1,0,0,0,0,0,1,0,0,0,1,0,0,0,0,1,0,0,0,1,0,0,0,1],
+  [1,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1],
+  [1,0,0,0,0,0,1,1,0,1,1,0,0,0,0,1,0,1,0,1,0,0,0,1],
+  [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+  [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+  [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+  [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+  [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+  [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+  [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+  [1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+  [1,1,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+  [1,1,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+  [1,1,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+  [1,1,0,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+  [1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+  [1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+]);
+player.x = 1;
+player.y = 1;
+var keyCodes = {
+	"38": "up",
+	"40": "down",
+	"37": "left",
+	"39": "right"
+}
+document.addEventListener("keydown", function(e) {
+	e = e || window.event;
+	player.startMoving(keyCodes[e.keyCode]);
+});
+document.addEventListener("keyup", function(e) {
+	e = e || window.event;
+	player.stopMoving(keyCodes[e.keyCode]);
+});
+var t0 = performance.now();
+var t1 = performance.now();
+function renderLoop() {
+	ctx.clearRect(0, 0, c.width, c.height);
+	player.castRays();
+}
+setInterval(renderLoop, 1000/60);
+setInterval(drawMiniMap, 1000/60);
+		</script>
+	</body>
+</html>
