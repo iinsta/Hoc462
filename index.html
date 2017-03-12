@@ -12,7 +12,6 @@
 		<script>
 /*
 | 0: cast to integer
-TODO: WTF is CAMERA PLANE?
 LINKS:
 CONSUME THOSE
 http://lodev.org/cgtutor/raycasting.html
@@ -93,14 +92,12 @@ function updateMiniMap() {
 function Player() {
 	this.x = 0;
 	this.y = 0;
-	this.dirX = -1
+	this.dirX = 1
 	this.dirY = 0; 
 	this.planeX = 0
 	this.planeY = 0.66;
 	this.dir = 0;
 	this.rot = 0;
-	this.cosRot = Math.cos(0);
-	this.sinRot = Math.sin(0);
 	this.speed = 0;
 	this.moveSpeed = 0.4;
 	this.rotSpeed = 6 * Math.PI / 180;
@@ -110,6 +107,7 @@ function Player() {
 Player.prototype = {
 	move: function() {
 		var moveStep = this.speed * this.moveSpeed;
+		var oldRot = this.rot;
 		this.rot += this.dir * this.rotSpeed;
 		var newX = this.x + Math.cos(player.rot) * moveStep;
 		var newY = this.y + Math.sin(player.rot) * moveStep;
@@ -125,7 +123,7 @@ Player.prototype = {
 		this.x = newX;
 		this.y = newY;
 		var oldDirX = this.dirX;
-		this.dirX = this.dirX * Math.cos(this.dir * this.rotSpeed) - this.dirY * Math.sin(this.dir * this.rotSpeed);
+		this.dirX = this.dirX * Math.cos(this.dir * -this.rotSpeed) - this.dirY * Math.sin(this.dir * this.rotSpeed);
 		this.dirY = oldDirX * Math.sin(this.dir * this.rotSpeed) + this.dirY * Math.cos(this.dir * this.rotSpeed);
 		var oldPlaneX = this.planeX;
 		this.planeX = this.planeX * Math.cos(this.dir * this.rotSpeed) - this.planeY * Math.sin(this.dir * this.rotSpeed);
@@ -238,6 +236,7 @@ Map.prototype.get = function(x, y) {
 	return currentMapBlock;
 }
 var player = new Player();
+player.x = player.y = 3;
 player.map = new Map([
   [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
   [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
@@ -264,8 +263,6 @@ player.map = new Map([
   [1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
   [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
 ]);
-player.x = 1;
-player.y = 1;
 var keyCodes = {
 	"38": "up",
 	"40": "down",
