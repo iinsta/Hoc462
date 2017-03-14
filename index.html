@@ -216,8 +216,8 @@ Player.prototype = {
 				drawEnd = c.height - 1;
 			}
 			var color = this.map.wallTextures[this.map.get(mapX, mapY)];
-			if (typeof color === "string") {
-				var texture = new Texture(color);
+			if (color instanceof Texture) {
+				var texture = color;
 				var wallX;
 				if (side === X_HIT) {
 					wallX = rayPosY + wallDistance * rayDirY;
@@ -299,7 +299,7 @@ player.map = new Map([
   [1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
   [1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
   [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
-], {'1': 'https://github.com/khanh2003/Hoc462/blob/master/walls.png?raw=true'});
+], {'1': new Texture('walls.png')});
 var keyCodes = {
 	"38": "up",
 	"40": "down",
