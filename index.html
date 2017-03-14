@@ -56,9 +56,6 @@ var UP = 1;
 var DOWN = -1;
 var LEFT = -1;
 var RIGHT = 1;
-var colorList = {
-	'1': [255, 0, 0]
-};
 function drawMiniMap() {
 	mapCtx.fillStyle = "white";
 	mapCtx.fillRect(0, 0, minimap.width, minimap.height);
@@ -107,28 +104,39 @@ function Player() {
 Player.prototype = {
 	move: function() {
 		var moveStep = this.speed * this.moveSpeed;
-		var oldRot = this.rot;
 		this.rot += this.dir * this.rotSpeed;
 		var newX = this.x + Math.cos(player.rot) * moveStep;
 		var newY = this.y + Math.sin(player.rot) * moveStep;
 		var currentMapBlock = this.map.get(newX|0, newY|0);
 		if (currentMapBlock === OUTSIDE_THE_MAP || currentMapBlock > 0) {
-			this
-				.stopMoving("up")
-				.stopMoving("down")
-				.stopMoving("left")
-				.stopMoving("right");
+			this.stopMoving();
 			return;
 		};
 		this.x = newX;
 		this.y = newY;
-		var oldDirX = this.dirX;
-		this.dirX = this.dirX * Math.cos(this.dir * -this.rotSpeed) - this.dirY * Math.sin(this.dir * this.rotSpeed);
-		this.dirY = oldDirX * Math.sin(this.dir * this.rotSpeed) + this.dirY * Math.cos(this.dir * this.rotSpeed);
-		var oldPlaneX = this.planeX;
-		this.planeX = this.planeX * Math.cos(this.dir * this.rotSpeed) - this.planeY * Math.sin(this.dir * this.rotSpeed);
-		this.planeY = oldPlaneX * Math.sin(this.dir * this.rotSpeed) + this.planeY * Math.cos(this.dir * this.rotSpeed);
+		this.rotateDirectionAndPlane(this.dir * this.rotSpeed);
 		return this;
+	},
+	rotateDirectionAndPlane: function(angle) {
+		var oldDirX = this.dirX;
+		this.dirX = this.dirX * Math.cos(angle) - this.dirY * Math.sin(angle);
+		this.dirY = oldDirX * Math.sin(angle) + this.dirY * Math.cos(angle);
+		var oldPlaneX = this.planeX;
+		this.planeX = this.planeX * Math.cos(angle) - this.planeY * Math.sin(angle);
+		this.planeY = oldPlaneX * Math.sin(angle) + this.planeY * Math.cos(angle);
+		this.stopMoving();
+	},
+	setXY: function(x, y) {
+		this.x = x;
+		this.y = y;
+		return this;
+	},
+	setRot: function(angle) {
+		var difference = angle - this.rot;
+		this.rot = angle;
+		this.rotateDirectionAndPlane(difference);
+		return this;
+
 	},
 	startMoving: function(direction) {
 		switch (direction) {
@@ -141,21 +149,15 @@ Player.prototype = {
 			case "right":
 				this.dir = RIGHT; break;
 		}
-		this.move();
 		return this;
 	},
-	stopMoving: function(direction) {
-		switch (direction) {
-			case "up":
-			case "down":
-				this.speed = 0; break;
-			case "left":
-			case "right":
-				this.dir = 0; break;
-		}
-		return this;
+	stopMoving: function() {
+			this.speed = 0;
+			this.dir = 0;
+			return this;
 	},
 	castRays: function() {
+		this.move();
 		for (var x = 0; x < c.width; x++) {
 			var cameraX = 2 * x / c.width - 1;
 			var rayPosX = this.x;
@@ -213,20 +215,49 @@ Player.prototype = {
 			if (drawEnd >= c.height) {
 				drawEnd = c.height - 1;
 			}
-			var color = colorList[this.map.get(mapX, mapY)];
-			if (side === Y_HIT) {color = color.map(_ => (_ / 2) | 0) }
-			ctx.strokeStyle = "rgb("+color[0]+", "+color[1]+", "+color[2]+")";
-			ctx.beginPath();
-			ctx.moveTo(x, drawStart);
-			ctx.lineTo(x, drawEnd);
-			ctx.stroke();
+			var color = this.map.wallTextures[this.map.get(mapX, mapY)];
+			if (typeof color === "string") {
+				var texture = new Texture(color);
+				var wallX;
+				if (side === X_HIT) {
+					wallX = rayPosY + wallDistance * rayDirY;
+				} else {
+					wallX = rayPosX + wallDistance * rayDirX;
+				}
+				wallX -= wallX | 0;
+				var textureX = (wallX * texture.image.width) | 0;
+				textureX = texture.image.width - textureX - 1;
+				ctx.drawImage(texture.image, 0, 0, 64, 64);
+				ctx.drawImage(texture.image, textureX, 0, 1, texture.image.height, x, drawStart, 1, lineHeight);
+				if (side === Y_HIT) {
+					ctx.globalAlpha = .5;
+					ctx.strokeStyle = 'black';
+					ctx.beginPath();
+					ctx.moveTo(x, drawStart);
+					ctx.lineTo(x, drawEnd);
+					ctx.stroke();
+					ctx.globalAlpha = 1;
+				}
+			} else {
+				if (side == Y_HIT) {
+					color = color.map(function (_) {
+						return (_ / 2) | 0; 
+					});
+				}
+				ctx.strokeStyle = "rgb("+color[0]+", "+color[1]+", "+color[2]+")";
+				ctx.beginPath();
+				ctx.moveTo(x, drawStart);
+				ctx.lineTo(x, drawEnd);
+				ctx.stroke();
+			}
 		}
 	}
-};
-function Map(wallGrid) {
+}
+function Map(wallGrid, wallTextures) {
 	this.wallGrid = wallGrid;
 	this.height = wallGrid.length;
 	this.width = this.height === 0 ? 0 : wallGrid[0].length;
+	this.wallTextures = wallTextures || {};
 }
 Map.prototype.get = function(x, y) {
 	x = x | 0;
@@ -234,6 +265,12 @@ Map.prototype.get = function(x, y) {
 	var currentMapBlock = this.wallGrid[y][x];
 	if (currentMapBlock === undefined) return OUTSIDE_THE_MAP;
 	return currentMapBlock;
+}
+function Texture(src, width, height) {
+	this.image = new Image();
+	this.image.src = src;
+	this.image.width = width || 64;
+	this.image.height = height || 64;
 }
 var player = new Player();
 player.x = player.y = 3;
@@ -262,7 +299,7 @@ player.map = new Map([
   [1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
   [1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
   [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
-]);
+], {'1': 'walls.png'});
 var keyCodes = {
 	"38": "up",
 	"40": "down",
@@ -271,10 +308,12 @@ var keyCodes = {
 }
 document.addEventListener("keydown", function(e) {
 	e = e || window.event;
+	e.preventDefault();
 	player.startMoving(keyCodes[e.keyCode]);
 });
 document.addEventListener("keyup", function(e) {
 	e = e || window.event;
+	e.preventDefault();
 	player.stopMoving(keyCodes[e.keyCode]);
 });
 var t0 = performance.now();
@@ -283,8 +322,11 @@ function renderLoop() {
 	ctx.clearRect(0, 0, c.width, c.height);
 	player.castRays();
 }
-setInterval(renderLoop, 1000/60);
-setInterval(drawMiniMap, 1000/60);
+requestAnimationFrame(function animate() {
+	renderLoop();
+	drawMiniMap();
+	requestAnimationFrame(animate);
+});
 		</script>
 	</body>
 </html>
