@@ -233,7 +233,6 @@ Player.prototype = {
 				if ((side === X_HIT && rayDirX > 0) || (side === Y_HIT && rayDirY < 0)) {
 					textureX = texture.image.width - textureX - 1;
 				}
-				log500Times(textureX);
 				ctx.drawImage(texture.image, textureX, 0, 1, texture.image.height, x, drawStart, 1, lineHeight);
 				if (side === Y_HIT) {
 					ctx.globalAlpha = .5;
