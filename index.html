@@ -44,6 +44,16 @@ function canvasDebugger(contexts) {
 		_.closePath = newClosePath;
 	});
 }
+var log500Times;
+(function() {
+	var counter = 0;
+	log500Times = function() {
+		if (counter < 500) {
+			console.log(arguments);
+		}
+		counter++;
+	}
+})()
 canvasDebugger([ctx, mapCtx]);
 var MINI_MAP_SCALE = 8;
 var OUTSIDE_THE_MAP = -1;
@@ -208,13 +218,7 @@ Player.prototype = {
 			}
 			var lineHeight = (c.height / wallDistance) | 0;
 			var drawStart = -lineHeight / 2 + c.height / 2;
-			if (drawStart < 0) {
-				drawStart = 0;
-			}
 			var drawEnd = lineHeight / 2 + c.height / 2;
-			if (drawEnd >= c.height) {
-				drawEnd = c.height - 1;
-			}
 			var color = this.map.wallTextures[this.map.get(mapX, mapY)];
 			if (color instanceof Texture) {
 				var texture = color;
@@ -226,8 +230,10 @@ Player.prototype = {
 				}
 				wallX -= wallX | 0;
 				var textureX = (wallX * texture.image.width) | 0;
-				textureX = texture.image.width - textureX - 1;
-				ctx.drawImage(texture.image, 0, 0, 64, 64);
+				if ((side === X_HIT && rayDirX > 0) || (side === Y_HIT && rayDirY < 0)) {
+					textureX = texture.image.width - textureX - 1;
+				}
+				log500Times(textureX);
 				ctx.drawImage(texture.image, textureX, 0, 1, texture.image.height, x, drawStart, 1, lineHeight);
 				if (side === Y_HIT) {
 					ctx.globalAlpha = .5;
@@ -269,8 +275,8 @@ Map.prototype.get = function(x, y) {
 function Texture(src, width, height) {
 	this.image = new Image();
 	this.image.src = src;
-	this.image.width = width || 64;
-	this.image.height = height || 64;
+	width ? this.image.width = width : 0;
+	height ? this.image.height = height : 0;
 }
 var player = new Player();
 player.x = player.y = 3;
@@ -330,4 +336,3 @@ requestAnimationFrame(function animate() {
 		</script>
 	</body>
 </html>
-
