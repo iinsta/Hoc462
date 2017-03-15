@@ -313,14 +313,53 @@ var keyCodes = {
 }
 document.addEventListener("keydown", function(e) {
 	e = e || window.event;
-	e.preventDefault();
 	player.startMoving(keyCodes[e.keyCode]);
 });
 document.addEventListener("keyup", function(e) {
 	e = e || window.event;
-	e.preventDefault();
 	player.stopMoving(keyCodes[e.keyCode]);
 });
+var isDragging = false;
+c.addEventListener("mousedown", startDragging);
+window.addEventListener("mouseup", endDragging);
+c.addEventListener("touchstart", startDragging);
+c.addEventListener("touchend", endDragging);
+c.addEventListener("mousemove", whileDragging);
+c.addEventListener("touchmove", whileDragging);
+var mouseX = 0;
+var pmouseX = 0;
+var mouseY = 0;
+var pmouseY = 0;
+function whileDragging(e) {
+	var event;
+	if (e.touches) {
+		event = e.touches[0];
+	} else {
+		event = e;
+	}
+	pmouseX = mouseX;
+	pmouseY = mouseY;
+	mouseX = event.pageX - c.offsetLeft;
+	mouseY = event.pageY - c.offsetTop;
+	if (isDragging) {
+		player.setRot(player.rot + (mouseX - pmouseX) / c.width * 2);
+		player.speed = -(mouseY - pmouseY) / c.height * 15;
+	}
+}
+function startDragging(e) {
+	var event;
+	if (e.touches) {
+		event = e.touches[0];
+	} else {
+		event = e;
+	}
+	mouseX = event.pageX - c.offsetLeft;
+	mouseY = event.pageY - c.offsetTop;
+	isDragging = true;
+}
+function endDragging(e) {
+	isDragging = false;
+}
 var t0 = performance.now();
 var t1 = performance.now();
 function renderLoop() {
