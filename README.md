@@ -4,4 +4,4 @@ Currently there's not much inside Hoc462. Just boring red walls. https://khanh20
 ## How to contribute?
 I don't know.
 ## License?
-CC BY-NC
+So complicated. Let me think.
