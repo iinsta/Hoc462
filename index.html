@@ -10,15 +10,7 @@
 		<canvas id="minimap" width="640" height="640"></canvas>
 		<!-- Please include JS libraries below this line -->
 		<script>
-/*
-| 0: cast to integer
-LINKS:
-CONSUME THOSE
-http://lodev.org/cgtutor/raycasting.html
-http://lodev.org/cgtutor/raycasting2.html
-http://lodev.org/cgtutor/raycasting3.html
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-*/
+// | 0: cast to integer
 var ctx = c.getContext("2d");
 var mapCtx = minimap.getContext("2d");
 function canvasDebugger(contexts) {
@@ -57,7 +49,6 @@ var log500Times;
 canvasDebugger([ctx, mapCtx]);
 var MINI_MAP_SCALE = 8;
 var OUTSIDE_THE_MAP = -1;
-var IS_WALL = 1;
 var NO_HIT = 0;
 var IS_HIT = 1;
 var X_HIT = 0;
@@ -66,12 +57,15 @@ var UP = 1;
 var DOWN = -1;
 var LEFT = -1;
 var RIGHT = 1;
+var TEXTURED_WALL = 10;
+var COLORED_WALL = 11;
+var SPRITE = 12;
 function drawMiniMap() {
 	mapCtx.fillStyle = "white";
 	mapCtx.fillRect(0, 0, minimap.width, minimap.height);
 	for (var y = 0; y < player.map.height; y++)
 		for (var x = 0; x < player.map.width; x++)
-			if (player.map.get(x, y) == IS_WALL) {
+			if (player.map.get(x, y) > 0) {
 				mapCtx.fillStyle = "rgb(200, 200, 200)";
 				mapCtx.fillRect(
 					x * MINI_MAP_SCALE,
@@ -82,12 +76,20 @@ function drawMiniMap() {
 	updateMiniMap();
 }
 function updateMiniMap() {
-	mapCtx.fillStyle = "black";
-	mapCtx.fillRect(
-		player.x * MINI_MAP_SCALE - 2,
-		player.y * MINI_MAP_SCALE - 2,
-		4, 4
-	);
+	player.map.sprites.forEach(function(sprite) {
+		mapCtx.fillStyle = "rgb(0, 200, 200)";
+		mapCtx.fillRect(
+			sprite.x * MINI_MAP_SCALE,
+			sprite.z * MINI_MAP_SCALE,
+			MINI_MAP_SCALE, MINI_MAP_SCALE
+		);
+		mapCtx.fillStyle = "black";
+		mapCtx.fillRect(
+			player.x * MINI_MAP_SCALE - 2,
+			player.y * MINI_MAP_SCALE - 2,
+			4, 4
+		);
+	});
 	mapCtx.beginPath();
 	mapCtx.moveTo(player.x * MINI_MAP_SCALE, player.y * MINI_MAP_SCALE);
 	mapCtx.lineTo(
@@ -101,7 +103,7 @@ function Player() {
 	this.y = 0;
 	this.dirX = 1
 	this.dirY = 0; 
-	this.planeX = 0
+	this.planeX = 0;
 	this.planeY = 0.66;
 	this.dir = 0;
 	this.rot = 0;
@@ -168,6 +170,7 @@ Player.prototype = {
 	},
 	castRays: function() {
 		this.move();
+		var zBuffer = [];
 		for (var x = 0; x < c.width; x++) {
 			var cameraX = 2 * x / c.width - 1;
 			var rayPosX = this.x;
@@ -184,6 +187,9 @@ Player.prototype = {
 			var sideDistY = 0;
 			var wallDistance = 0;
 			var side = 0; // x wall hit or y wall hit?
+			var giveUp = false;
+			zBuffer.push({});
+			var currentBuffer = zBuffer[zBuffer.length - 1];
 			if (rayDirX < 0) {
 				stepX = -1;
 				sideDistX = (rayPosX - mapX) * deltaDistX;
@@ -209,8 +215,16 @@ Player.prototype = {
 					mapY += stepY;
 					side = Y_HIT;	
 				}
-				if (this.map.get(mapX, mapY) > 0) {hit = IS_HIT;}
+				var currentMapBlock = this.map.get(mapX, mapY);
+				if (currentMapBlock === OUTSIDE_THE_MAP || currentMapBlock > 0) {
+					hit = IS_HIT;
+				}
+				if (currentMapBlock === OUTSIDE_THE_MAP) {
+					giveUp = true;
+				}
 			}
+			if (giveUp) {continue;}
+			currentBuffer.side = side;
 			if (side === X_HIT) {
 				wallDistance = (mapX - rayPosX + (1 - stepX) / 2) / rayDirX;
 			} else {
@@ -219,9 +233,15 @@ Player.prototype = {
 			var lineHeight = (c.height / wallDistance) | 0;
 			var drawStart = -lineHeight / 2 + c.height / 2;
 			var drawEnd = lineHeight / 2 + c.height / 2;
+			currentBuffer.start = drawStart;
+			currentBuffer.end = drawEnd;
+			currentBuffer.x = x; 
+			currentBuffer.distance = wallDistance;
 			var color = this.map.wallTextures[this.map.get(mapX, mapY)];
 			if (color instanceof Texture) {
+				currentBuffer.type = TEXTURED_WALL;
 				var texture = color;
+				currentBuffer.texture = texture;
 				var wallX;
 				if (side === X_HIT) {
 					wallX = rayPosY + wallDistance * rayDirY;
@@ -233,6 +253,50 @@ Player.prototype = {
 				if ((side === X_HIT && rayDirX > 0) || (side === Y_HIT && rayDirY < 0)) {
 					textureX = texture.image.width - textureX - 1;
 				}
+				currentBuffer.textureX = textureX;
+			} else {
+				currentBuffer.type = COLORED_WALL;
+				currentBuffer.color = color;
+			}
+			var self = this;
+			this.map.sprites.forEach(function(sprite) {
+				zBuffer.push({});
+				var currentBuffer = zBuffer[zBuffer.length - 1];
+				currentBuffer.type = SPRITE;
+				currentBuffer.sprite = sprite;
+				var spriteX = sprite.x - self.x;
+				var spriteY = sprite.z - self.y;
+				var invDet = 1.0 / (self.planeX * self.dirY - self.dirX * self.planeY);
+				var transformX = invDet * (self.dirY * spriteX - self.dirX * spriteY);
+				var transformY = invDet * (-self.planeY * spriteX + self.planeX * spriteY);
+				if (transformY < 0) {delete currentBuffer} else {
+					var spriteScreenX = ((c.width / 2) * (1 + transformX / transformY)) | 0;
+					var spriteHeight = Math.abs((c.height / (transformY)) | 0);
+					var drawStartY = -spriteHeight / 2 + c.height / 2;
+					var drawEndY = spriteHeight / 2 + c.height / 2;
+					var spriteWidth = Math.abs((c.height / (transformY)) | 0);
+					var drawStartX = -spriteWidth / 2 + spriteScreenX;
+					var drawEndX = spriteWidth / 2 + spriteScreenX;
+					currentBuffer.distance = Math.sqrt(spriteX * spriteX + spriteY * spriteY) * Math.cos(player.rot);
+					currentBuffer.width = spriteWidth;
+					currentBuffer.height = spriteHeight;
+					currentBuffer.drawX = drawStartX;
+					currentBuffer.drawY = drawStartY;
+				}
+			});
+		}
+		return zBuffer.sort(function(a, b) {return b.distance - a.distance;});
+	},
+	render: function(zBuffer) {
+		zBuffer.forEach(function(currentBuffer) {
+			var side = currentBuffer.side;
+			var drawStart = currentBuffer.start;
+			var drawEnd = currentBuffer.end;
+			var lineHeight = drawEnd - drawStart;
+			if (currentBuffer.type === TEXTURED_WALL) {
+				var texture = currentBuffer.texture;
+				var textureX = currentBuffer.textureX;
+				var x = currentBuffer.x;
 				ctx.drawImage(texture.image, textureX, 0, 1, texture.image.height, x, drawStart, 1, lineHeight);
 				if (side === Y_HIT) {
 					ctx.globalAlpha = .5;
@@ -243,7 +307,8 @@ Player.prototype = {
 					ctx.stroke();
 					ctx.globalAlpha = 1;
 				}
-			} else {
+			} else if (currentBuffer.type === COLORED_WALL) {
+				var color = currentBuffer.color;
 				if (side == Y_HIT) {
 					color = color.map(function (_) {
 						return (_ / 2) | 0; 
@@ -254,20 +319,30 @@ Player.prototype = {
 				ctx.moveTo(x, drawStart);
 				ctx.lineTo(x, drawEnd);
 				ctx.stroke();
+			} else if (currentBuffer.type === SPRITE) {
+				var dist = currentBuffer.distance;
+				var drawX = currentBuffer.drawX;
+				var drawY = currentBuffer.drawY;
+				var width = currentBuffer.width;
+				var height = currentBuffer.height;
+				ctx.drawImage(currentBuffer.sprite.texture.image, drawX, drawY, width, height);
 			}
-		}
+		});
 	}
 }
-function Map(wallGrid, wallTextures) {
+function Map(wallGrid, wallTextures, sprites) {
 	this.wallGrid = wallGrid;
 	this.height = wallGrid.length;
 	this.width = this.height === 0 ? 0 : wallGrid[0].length;
 	this.wallTextures = wallTextures || {};
+	this.sprites = sprites || [];
 }
 Map.prototype.get = function(x, y) {
 	x = x | 0;
 	y = y | 0;
-	var currentMapBlock = this.wallGrid[y][x];
+	var currentMapBlock = this.wallGrid[y];
+	if (currentMapBlock === undefined) return OUTSIDE_THE_MAP;
+	currentMapBlock = currentMapBlock[x];
 	if (currentMapBlock === undefined) return OUTSIDE_THE_MAP;
 	return currentMapBlock;
 }
@@ -276,6 +351,12 @@ function Texture(src, width, height) {
 	this.image.src = src;
 	width ? this.image.width = width : 0;
 	height ? this.image.height = height : 0;
+}
+function Sprite(texture, x, y, z) {
+	this.texture = texture;
+	this.x = x;
+	this.y = y;
+	this.z = z;
 }
 var player = new Player();
 player.x = player.y = 3;
@@ -304,7 +385,7 @@ player.map = new Map([
   [1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
   [1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
   [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
-], {'1': new Texture('walls.png')});
+], {'1': new Texture('walls.png')},[new Sprite(new Texture('walls.png'), 4, 0, 4)]);
 var keyCodes = {
 	"38": "up",
 	"40": "down",
@@ -332,6 +413,7 @@ var mouseY = 0;
 var pmouseY = 0;
 function whileDragging(e) {
 	var event;
+	e.preventDefault();
 	if (e.touches) {
 		event = e.touches[0];
 	} else {
@@ -348,6 +430,7 @@ function whileDragging(e) {
 }
 function startDragging(e) {
 	var event;
+	e.preventDefault();
 	if (e.touches) {
 		event = e.touches[0];
 	} else {
@@ -358,13 +441,12 @@ function startDragging(e) {
 	isDragging = true;
 }
 function endDragging(e) {
+	e.preventDefault();
 	isDragging = false;
 }
-var t0 = performance.now();
-var t1 = performance.now();
 function renderLoop() {
 	ctx.clearRect(0, 0, c.width, c.height);
-	player.castRays();
+	player.render(player.castRays());
 }
 requestAnimationFrame(function animate() {
 	renderLoop();
