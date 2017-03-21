@@ -214,14 +214,14 @@ Player.prototype = {
 				sideDistX = (rayPosX - mapX) * deltaDistX;
 			} else {
 				stepX = 1;
-				sideDistX = (mapX + 1.0 - rayPosX) * deltaDistX;
+				sideDistX = (mapX + 1 - rayPosX) * deltaDistX;
 			}
 			if (rayDirY < 0) {
 				stepY = -1;
 				sideDistY = (rayPosY - mapY) * deltaDistY;
 			} else {
 				stepY = 1;
-				sideDistY = (mapY + 1.0 - rayPosY) * deltaDistY;
+				sideDistY = (mapY + 1 - rayPosY) * deltaDistY;
 			}
 			var hit = NO_HIT;
 			while (hit === NO_HIT) {
@@ -285,7 +285,7 @@ Player.prototype = {
 				currentBuffer.sprite = sprite;
 				var spriteX = sprite.x - self.x;
 				var spriteY = sprite.z - self.y;
-				var invDet = 1.0 / (self.planeX * self.dirY - self.dirX * self.planeY);
+				var invDet = 1 / (self.planeX * self.dirY - self.dirX * self.planeY);
 				var transformX = invDet * (self.dirY * spriteX - self.dirX * spriteY);
 				var transformY = invDet * (-self.planeY * spriteX + self.planeX * spriteY);
 				if (transformY < 0) {delete currentBuffer} else {
@@ -316,6 +316,7 @@ Player.prototype = {
 				var texture = currentBuffer.texture;
 				var textureX = currentBuffer.textureX;
 				var x = currentBuffer.x;
+				ctx.beginPath();
 				ctx.drawImage(texture.image, textureX, 0, 1, texture.image.height, x, drawStart, 1, lineHeight);
 				if (side === Y_HIT) {
 					ctx.globalAlpha = .5;
@@ -327,7 +328,9 @@ Player.prototype = {
 					ctx.globalAlpha = 1;
 				}
 			} else if (currentBuffer.type === COLORED_WALL) {
+				var x = currentBuffer.x;
 				var color = currentBuffer.color;
+				var side = currentBuffer.side;
 				if (side == Y_HIT) {
 					color = color.map(function (_) {
 						return (_ / 2) | 0; 
@@ -404,7 +407,7 @@ player.map = new Map([
   [1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
   [1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
   [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
-], {'1': new Texture('walls.png')},[new Sprite(new Texture('walls.png'), 4, 0, 4)]);
+], {'1': new Texture('walls.png')}, [new Sprite(new Texture('walls.png'), 4, 0, 4)]);
 var keyCodes = {
 	"38": "up",
 	"40": "down",
