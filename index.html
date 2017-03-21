@@ -29,10 +29,10 @@
 var ctx = c.getContext("2d");
 var mapCtx = minimap.getContext("2d");
 function canvasDebugger(contexts) {
-	return contexts.map(_=>{
+	return contexts.map(function(_) {
 		var nativeBeginPath = _.beginPath.bind(_);
 		var newBeginPath = (function() {
-			this[1].watchDog = setTimeout(_=>console.log('Someone forgot to close path, fill or stroke'), 200);
+			this[1].watchDog = setTimeout(function() {console.log('Someone forgot to close path, fill or stroke')}, 200);
 			this[0]();
 		}).bind([nativeBeginPath, _]);
 		_.beginPath = newBeginPath;
