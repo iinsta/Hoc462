@@ -4,6 +4,21 @@
 	<head>
 		<title>Hoc462</title>
 		<!-- Include stylesheets only here -->
+		<style>
+#c {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100vw;
+	height: 100vh;
+	background-color: black;
+}
+#minimap {
+	position: absolute;
+	top: 0;
+	left: 0;
+}
+		</style>
 	</head>
 	<body>
 		<canvas id="c" width="640" height="640"></canvas>
@@ -61,6 +76,10 @@ var TEXTURED_WALL = 10;
 var COLORED_WALL = 11;
 var SPRITE = 12;
 function drawMiniMap() {
+	if (minimap.width !== player.map.width * MINI_MAP_SCALE || minimap.height !== player.map.height * MINI_MAP_SCALE) {
+		minimap.width = player.map.width * MINI_MAP_SCALE;
+		minimap.height = player.map.height * MINI_MAP_SCALE;
+	}
 	mapCtx.fillStyle = "white";
 	mapCtx.fillRect(0, 0, minimap.width, minimap.height);
 	for (var y = 0; y < player.map.height; y++)
@@ -449,6 +468,10 @@ function renderLoop() {
 	player.render(player.castRays());
 }
 requestAnimationFrame(function animate() {
+	if (c.clientWidth !== c.width || c.clientHeight !== c.height) {
+		c.width = c.clientWidth;
+		c.height = c.clientHeight;
+	}
 	renderLoop();
 	drawMiniMap();
 	requestAnimationFrame(animate);
