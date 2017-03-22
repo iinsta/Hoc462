@@ -225,7 +225,6 @@ Player.prototype = {
 				sideDistY = (mapY + 1 - rayPosY) * deltaDistY;
 			}
 			var hit = NO_HIT;
-			var t0 = performance.now();
 			while (hit === NO_HIT) {
 				if (sideDistX < sideDistY) {
 					sideDistX += deltaDistX;
@@ -248,8 +247,6 @@ Player.prototype = {
 					visibleSprites.push(currentSpriteBlock);
 				}
 			}
-			var t1 = performance.now();
-			log500Times(t1 - t0);
 			if (giveUp) {continue;}
 			currentBuffer.side = side;
 			if (side === X_HIT) {
@@ -324,24 +321,19 @@ Player.prototype = {
 				var texture = currentBuffer.texture;
 				var textureX = currentBuffer.textureX;
 				var x = currentBuffer.x;
-				ctx.drawImage(texture.image, textureX, 0, 1, texture.image.height, x, drawStart, 1, lineHeight);
 				if (side === Y_HIT) {
-					ctx.globalAlpha = .5;
-					ctx.strokeStyle = 'black';
-					ctx.beginPath();
-					ctx.moveTo(x, drawStart);
-					ctx.lineTo(x, drawEnd);
-					ctx.stroke();
+					ctx.globalAlpha = .7;
+				} else {
 					ctx.globalAlpha = 1;
 				}
+				ctx.drawImage(texture.image, textureX, 0, 1, texture.image.height, x, drawStart, 1, lineHeight);
 			} else if (currentBuffer.type === COLORED_WALL) {
 				var x = currentBuffer.x;
 				var color = currentBuffer.color;
-				var side = currentBuffer.side;
-				if (side == Y_HIT) {
-					color = color.map(function (_) {
-						return (_ / 2) | 0; 
-					});
+				if (side === Y_HIT) {
+					ctx.globalAlpha = .7;
+				} else {
+					ctx.globalAlpha = 1;
 				}
 				ctx.strokeStyle = "rgb("+color[0]+", "+color[1]+", "+color[2]+")";
 				ctx.beginPath();
