@@ -167,7 +167,6 @@ Player.prototype = {
 		this.rot = angle;
 		this.rotateDirectionAndPlane(difference);
 		return this;
-
 	},
 	startMoving: function(direction) {
 		switch (direction) {
@@ -189,6 +188,8 @@ Player.prototype = {
 	},
 	castRays: function() {
 		this.move();
+		var spriteMap = this.map.spriteMap;
+		var visibleSprites = [];
 		var zBuffer = [];
 		for (var x = 0; x < c.width; x++) {
 			var cameraX = 2 * x / c.width - 1;
@@ -224,6 +225,7 @@ Player.prototype = {
 				sideDistY = (mapY + 1 - rayPosY) * deltaDistY;
 			}
 			var hit = NO_HIT;
+			var t0 = performance.now();
 			while (hit === NO_HIT) {
 				if (sideDistX < sideDistY) {
 					sideDistX += deltaDistX;
@@ -237,11 +239,17 @@ Player.prototype = {
 				var currentMapBlock = this.map.get(mapX, mapY);
 				if (currentMapBlock === OUTSIDE_THE_MAP || currentMapBlock > 0) {
 					hit = IS_HIT;
+					if (currentMapBlock === OUTSIDE_THE_MAP) {
+						giveUp = true;
+					}
 				}
-				if (currentMapBlock === OUTSIDE_THE_MAP) {
-					giveUp = true;
+				var currentSpriteBlock = spriteMap.get(mapX, mapY);
+				if (currentSpriteBlock instanceof Sprite) {
+					visibleSprites.push(currentSpriteBlock);
 				}
 			}
+			var t1 = performance.now();
+			log500Times(t1 - t0);
 			if (giveUp) {continue;}
 			currentBuffer.side = side;
 			if (side === X_HIT) {
@@ -316,7 +324,6 @@ Player.prototype = {
 				var texture = currentBuffer.texture;
 				var textureX = currentBuffer.textureX;
 				var x = currentBuffer.x;
-				ctx.beginPath();
 				ctx.drawImage(texture.image, textureX, 0, 1, texture.image.height, x, drawStart, 1, lineHeight);
 				if (side === Y_HIT) {
 					ctx.globalAlpha = .5;
@@ -352,14 +359,24 @@ Player.prototype = {
 		});
 	}
 }
-function Map(wallGrid, wallTextures, sprites) {
+function Grid(wallGrid, wallTextures, sprites) {
+	if (typeof arguments[0] === "number" && typeof arguments[1] === "number") {
+		var [width, height] = arguments;
+		this.wallGrid = new Array(height);
+		this.width = width;
+		this.height = height;
+		return this;
+	}
 	this.wallGrid = wallGrid;
 	this.height = wallGrid.length;
 	this.width = this.height === 0 ? 0 : wallGrid[0].length;
 	this.wallTextures = wallTextures || {};
 	this.sprites = sprites || [];
+	this.spriteMap = new Grid(this.width, this.height);
+	this.updateSpriteMap();
+	return this;
 }
-Map.prototype.get = function(x, y) {
+Grid.prototype.get = function(x, y) {
 	x = x | 0;
 	y = y | 0;
 	var currentMapBlock = this.wallGrid[y];
@@ -367,6 +384,21 @@ Map.prototype.get = function(x, y) {
 	currentMapBlock = currentMapBlock[x];
 	if (currentMapBlock === undefined) return OUTSIDE_THE_MAP;
 	return currentMapBlock;
+}
+Grid.prototype.set = function(x, y, value) {
+	x = x | 0;
+	y = y | 0;
+	var currentLine = this.wallGrid[y];
+	if (currentLine === undefined) return OUTSIDE_THE_MAP;
+	this.wallGrid[y][x] = value;
+	return value;
+}
+Grid.prototype.updateSpriteMap = function() {
+	var self = this;
+	this.sprites.forEach(function(sprite) {
+		self.spriteMap.set(sprite.x, sprite.y, sprite);
+	});
+	return this;
 }
 function Texture(src, width, height) {
 	this.image = new Image();
@@ -382,7 +414,7 @@ function Sprite(texture, x, y, z) {
 }
 var player = new Player();
 player.x = player.y = 3;
-player.map = new Map([
+player.map = new Grid([
   [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
   [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
   [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
