@@ -25,7 +25,6 @@
 		<canvas id="minimap" width="640" height="640"></canvas>
 		<!-- Please include JS libraries below this line -->
 		<script>
-// | 0: cast to integer
 var ctx = c.getContext("2d");
 var mapCtx = minimap.getContext("2d");
 function canvasDebugger(contexts) {
@@ -75,6 +74,7 @@ var RIGHT = 1;
 var TEXTURED_WALL = 10;
 var COLORED_WALL = 11;
 var SPRITE = 12;
+var SORT_BY_DISTANCE = function(a, b) {return b.distance - a.distance};
 function drawMiniMap() {
 	if (minimap.width !== player.map.width * MINI_MAP_SCALE || minimap.height !== player.map.height * MINI_MAP_SCALE) {
 		minimap.width = player.map.width * MINI_MAP_SCALE;
@@ -188,7 +188,6 @@ Player.prototype = {
 	},
 	castRays: function() {
 		this.move();
-		var spriteMap = this.map.spriteMap;
 		var visibleSprites = [];
 		var zBuffer = [];
 		for (var x = 0; x < c.width; x++) {
@@ -206,10 +205,8 @@ Player.prototype = {
 			var sideDistX = 0;
 			var sideDistY = 0;
 			var wallDistance = 0;
-			var side = 0; // x wall hit or y wall hit?
 			var giveUp = false;
-			zBuffer.push({});
-			var currentBuffer = zBuffer[zBuffer.length - 1];
+			var currentBuffer = zBuffer[x] = {};
 			if (rayDirX < 0) {
 				stepX = -1;
 				sideDistX = (rayPosX - mapX) * deltaDistX;
@@ -241,10 +238,6 @@ Player.prototype = {
 					if (currentMapBlock === OUTSIDE_THE_MAP) {
 						giveUp = true;
 					}
-				}
-				var currentSpriteBlock = spriteMap.get(mapX, mapY);
-				if (currentSpriteBlock instanceof Sprite) {
-					visibleSprites.push(currentSpriteBlock);
 				}
 			}
 			if (giveUp) {continue;}
@@ -282,34 +275,38 @@ Player.prototype = {
 				currentBuffer.type = COLORED_WALL;
 				currentBuffer.color = color;
 			}
-			var self = this;
-			this.map.sprites.forEach(function(sprite) {
-				zBuffer.push({});
-				var currentBuffer = zBuffer[zBuffer.length - 1];
-				currentBuffer.type = SPRITE;
-				currentBuffer.sprite = sprite;
-				var spriteX = sprite.x - self.x;
-				var spriteY = sprite.z - self.y;
-				var invDet = 1 / (self.planeX * self.dirY - self.dirX * self.planeY);
-				var transformX = invDet * (self.dirY * spriteX - self.dirX * spriteY);
-				var transformY = invDet * (-self.planeY * spriteX + self.planeX * spriteY);
-				if (transformY < 0) {delete currentBuffer} else {
-					var spriteScreenX = ((c.width / 2) * (1 + transformX / transformY)) | 0;
-					var spriteHeight = Math.abs((c.height / (transformY)) | 0);
-					var drawStartY = -spriteHeight / 2 + c.height / 2;
-					var drawEndY = spriteHeight / 2 + c.height / 2;
-					var spriteWidth = Math.abs((c.height / (transformY)) | 0);
-					var drawStartX = -spriteWidth / 2 + spriteScreenX;
-					var drawEndX = spriteWidth / 2 + spriteScreenX;
-					currentBuffer.distance = transformY;
-					currentBuffer.width = spriteWidth;
-					currentBuffer.height = spriteHeight;
-					currentBuffer.drawX = drawStartX;
-					currentBuffer.drawY = drawStartY;
-				}
-			});
+
 		}
-		return zBuffer.sort(function(a, b) {return b.distance - a.distance;});
+		var self = this;
+		this.map.sprites.forEach(function(sprite) {
+			var spriteX = sprite.x - self.x;
+			var spriteY = sprite.z - self.y;
+			var invDet = 1 / (self.planeX * self.dirY - self.dirX * self.planeY);
+			var transformX = invDet * (self.dirY * spriteX - self.dirX * spriteY);
+			var transformY = invDet * (-self.planeY * spriteX + self.planeX * spriteY);
+			if (transformY > 0) {
+				var spriteScreenX = (c.width / 2) * (1 + transformX / transformY);
+				var spriteHeight = Math.abs((c.height / transformY));
+				var drawStartY = -spriteHeight / 2 + c.height / 2;
+				var drawEndY = spriteHeight / 2 + c.height / 2;
+				var spriteWidth = Math.abs(c.height / transformY);
+				var drawStartX = -spriteWidth / 2 + spriteScreenX;
+				var drawEndX = spriteWidth / 2 + spriteScreenX;
+				var spriteImage = sprite.texture;
+				var texHeight = spriteImage.image.height;
+				var texWidth = spriteImage.image.width;
+				zBuffer.push({
+					type: SPRITE,
+					drawX: drawStartX,
+					drawY: drawStartY,
+					texture: spriteImage,
+					width: spriteWidth,
+					height: spriteHeight,
+					distance: transformY
+				});
+			}
+		});
+		return zBuffer.sort(SORT_BY_DISTANCE);
 	},
 	render: function(zBuffer) {
 		zBuffer.forEach(function(currentBuffer) {
@@ -321,6 +318,8 @@ Player.prototype = {
 				var texture = currentBuffer.texture;
 				var textureX = currentBuffer.textureX;
 				var x = currentBuffer.x;
+				ctx.fillStyle = "black";
+				ctx.fillRect(x, drawStart, 1, lineHeight);
 				if (side === Y_HIT) {
 					ctx.globalAlpha = .7;
 				} else {
@@ -330,42 +329,34 @@ Player.prototype = {
 			} else if (currentBuffer.type === COLORED_WALL) {
 				var x = currentBuffer.x;
 				var color = currentBuffer.color;
+				ctx.fillStyle = "black";
+				ctx.fillRect(x, drawStart, 1, lineHeight);
 				if (side === Y_HIT) {
 					ctx.globalAlpha = .7;
 				} else {
 					ctx.globalAlpha = 1;
 				}
-				ctx.strokeStyle = "rgb("+color[0]+", "+color[1]+", "+color[2]+")";
-				ctx.beginPath();
-				ctx.moveTo(x, drawStart);
-				ctx.lineTo(x, drawEnd);
-				ctx.stroke();
-			} else if (currentBuffer.type === SPRITE) {
-				var dist = currentBuffer.distance;
+				ctx.fillStyle = "rgb("+color[0]+", "+color[1]+", "+color[2]+")";
+				ctx.fillRect(x, drawStart, 1, lineHeight);
+			} else if (currentBuffer.type = SPRITE) {
+				ctx.globalAlpha = 1;
 				var drawX = currentBuffer.drawX;
 				var drawY = currentBuffer.drawY;
+				var texture = currentBuffer.texture;
 				var width = currentBuffer.width;
 				var height = currentBuffer.height;
-				ctx.drawImage(currentBuffer.sprite.texture.image, drawX, drawY, width, height);
+				ctx.drawImage(texture.image, 0, 0, texture.image.width, texture.image.height, drawX, drawY, width, height);
 			}
 		});
+
 	}
 }
 function Grid(wallGrid, wallTextures, sprites) {
-	if (typeof arguments[0] === "number" && typeof arguments[1] === "number") {
-		var [width, height] = arguments;
-		this.wallGrid = new Array(height);
-		this.width = width;
-		this.height = height;
-		return this;
-	}
 	this.wallGrid = wallGrid;
 	this.height = wallGrid.length;
 	this.width = this.height === 0 ? 0 : wallGrid[0].length;
 	this.wallTextures = wallTextures || {};
 	this.sprites = sprites || [];
-	this.spriteMap = new Grid(this.width, this.height);
-	this.updateSpriteMap();
 	return this;
 }
 Grid.prototype.get = function(x, y) {
@@ -376,21 +367,6 @@ Grid.prototype.get = function(x, y) {
 	currentMapBlock = currentMapBlock[x];
 	if (currentMapBlock === undefined) return OUTSIDE_THE_MAP;
 	return currentMapBlock;
-}
-Grid.prototype.set = function(x, y, value) {
-	x = x | 0;
-	y = y | 0;
-	var currentLine = this.wallGrid[y];
-	if (currentLine === undefined) return OUTSIDE_THE_MAP;
-	this.wallGrid[y][x] = value;
-	return value;
-}
-Grid.prototype.updateSpriteMap = function() {
-	var self = this;
-	this.sprites.forEach(function(sprite) {
-		self.spriteMap.set(sprite.x, sprite.y, sprite);
-	});
-	return this;
 }
 function Texture(src, width, height) {
 	this.image = new Image();
@@ -431,7 +407,8 @@ player.map = new Grid([
   [1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
   [1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
   [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
-], {'1': new Texture('walls.png')}, [new Sprite(new Texture('walls.png'), 4, 0, 4)]);
+], {'1': new Texture('walls.png')}, [new Sprite(new Texture('walls.png'), 4, 3, 4)]);
+
 var keyCodes = {
 	"38": "up",
 	"40": "down",
