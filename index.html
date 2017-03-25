@@ -182,102 +182,19 @@ Player.prototype = {
 		return this;
 	},
 	stopMoving: function() {
-			this.speed = 0;
-			this.dir = 0;
-			return this;
+		this.speed = 0;
+		this.dir = 0;
+		return this;
 	},
 	castRays: function() {
 		this.move();
 		var visibleSprites = [];
 		var zBuffer = [];
-		for (var x = 0; x < c.width; x++) {
-			var cameraX = 2 * x / c.width - 1;
-			var rayPosX = this.x;
-			var rayPosY = this.y;
-			var rayDirX = this.dirX + this.planeX * cameraX;
-			var rayDirY = this.dirY + this.planeY * cameraX;
-			var mapX = rayPosX | 0;
-			var mapY = rayPosY | 0
-			var deltaDistX = Math.sqrt(1 + (rayDirY * rayDirY) / (rayDirX * rayDirX));
-			var deltaDistY = Math.sqrt(1 + (rayDirX * rayDirX) / (rayDirY * rayDirY));
-			var stepX = 0;
-			var stepY = 0;
-			var sideDistX = 0;
-			var sideDistY = 0;
-			var wallDistance = 0;
-			var giveUp = false;
-			var currentBuffer = zBuffer[x] = {};
-			if (rayDirX < 0) {
-				stepX = -1;
-				sideDistX = (rayPosX - mapX) * deltaDistX;
-			} else {
-				stepX = 1;
-				sideDistX = (mapX + 1 - rayPosX) * deltaDistX;
-			}
-			if (rayDirY < 0) {
-				stepY = -1;
-				sideDistY = (rayPosY - mapY) * deltaDistY;
-			} else {
-				stepY = 1;
-				sideDistY = (mapY + 1 - rayPosY) * deltaDistY;
-			}
-			var hit = NO_HIT;
-			while (hit === NO_HIT) {
-				if (sideDistX < sideDistY) {
-					sideDistX += deltaDistX;
-					mapX += stepX;
-					side = X_HIT;
-				} else {
-					sideDistY += deltaDistY;
-					mapY += stepY;
-					side = Y_HIT;	
-				}
-				var currentMapBlock = this.map.get(mapX, mapY);
-				if (currentMapBlock === OUTSIDE_THE_MAP || currentMapBlock > 0) {
-					hit = IS_HIT;
-					if (currentMapBlock === OUTSIDE_THE_MAP) {
-						giveUp = true;
-					}
-				}
-			}
-			if (giveUp) {continue;}
-			currentBuffer.side = side;
-			if (side === X_HIT) {
-				wallDistance = (mapX - rayPosX + (1 - stepX) / 2) / rayDirX;
-			} else {
-				wallDistance = (mapY - rayPosY + (1 - stepY) / 2) / rayDirY;
-			}
-			var lineHeight = (c.height / wallDistance) | 0;
-			var drawStart = -lineHeight / 2 + c.height / 2;
-			var drawEnd = lineHeight / 2 + c.height / 2;
-			currentBuffer.start = drawStart;
-			currentBuffer.end = drawEnd;
-			currentBuffer.x = x; 
-			currentBuffer.distance = wallDistance;
-			var color = this.map.wallTextures[this.map.get(mapX, mapY)];
-			if (color instanceof Texture) {
-				currentBuffer.type = TEXTURED_WALL;
-				var texture = color;
-				currentBuffer.texture = texture;
-				var wallX;
-				if (side === X_HIT) {
-					wallX = rayPosY + wallDistance * rayDirY;
-				} else {
-					wallX = rayPosX + wallDistance * rayDirX;
-				}
-				wallX -= wallX | 0;
-				var textureX = (wallX * texture.image.width) | 0;
-				if ((side === X_HIT && rayDirX > 0) || (side === Y_HIT && rayDirY < 0)) {
-					textureX = texture.image.width - textureX - 1;
-				}
-				currentBuffer.textureX = textureX;
-			} else {
-				currentBuffer.type = COLORED_WALL;
-				currentBuffer.color = color;
-			}
-
-		}
 		var self = this;
+		Object.keys(this.map.wallTypes).forEach(function(typeID) {
+			self.castRaysToSpecifiedWallType(self.map.wallTypes[typeID], zBuffer);
+		});
+		console.log(zBuffer);
 		this.map.sprites.forEach(function(sprite) {
 			var spriteX = sprite.x - self.x;
 			var spriteY = sprite.z - self.y;
@@ -309,6 +226,98 @@ Player.prototype = {
 		});
 		return zBuffer.sort(SORT_BY_DISTANCE);
 	},
+	castRaysToSpecifiedWallType: function(wallType, zBuffer) {
+		for (var x = 0; x < c.width; x++) {
+			var cameraX = 2 * x / c.width - 1;
+			var rayPosX = this.x;
+			var rayPosY = this.y;
+			var rayDirX = this.dirX + this.planeX * cameraX;
+			var rayDirY = this.dirY + this.planeY * cameraX;
+			var mapX = rayPosX | 0;
+			var mapY = rayPosY | 0;
+			var deltaDistX = Math.sqrt(1 + (rayDirY * rayDirY) / (rayDirX * rayDirX));
+			var deltaDistY = Math.sqrt(1 + (rayDirX * rayDirX) / (rayDirY * rayDirY));
+			var stepX = 0;
+			var stepY = 0;
+			var sideDistX = 0;
+			var sideDistY = 0;
+			var wallDistance = 0;
+			var giveUp = false;
+			var currentBuffer = {};
+			zBuffer.push(currentBuffer);
+			if (rayDirX < 0) {
+				stepX = -1;
+				sideDistX = (rayPosX - mapX) * deltaDistX;
+			} else {
+				stepX = 1;
+				sideDistX = (mapX + 1 - rayPosX) * deltaDistX;
+			}
+			if (rayDirY < 0) {
+				stepY = -1;
+				sideDistY = (rayPosY - mapY) * deltaDistY;
+			} else {
+				stepY = 1;
+				sideDistY = (mapY + 1 - rayPosY) * deltaDistY;
+			}
+			var hit = NO_HIT;
+			while (hit === NO_HIT) {
+				if (sideDistX < sideDistY) {
+					sideDistX += deltaDistX;
+					mapX += stepX;
+					side = X_HIT;
+				} else {
+					sideDistY += deltaDistY;
+					mapY += stepY;
+					side = Y_HIT;	
+				}
+				var currentMapBlock = this.map.get(mapX, mapY);
+				if (currentMapBlock === OUTSIDE_THE_MAP || this.map.wallTypes[currentMapBlock] === wallType) {
+					hit = IS_HIT;
+					if (currentMapBlock === OUTSIDE_THE_MAP) {
+						giveUp = true;
+					}
+				}
+			}
+			if (giveUp) {continue;}
+			currentBuffer.side = side;
+			if (side === X_HIT) {
+				wallDistance = (mapX - rayPosX + (1 - stepX) / 2) / rayDirX;
+			} else {
+				wallDistance = (mapY - rayPosY + (1 - stepY) / 2) / rayDirY;
+			}
+			var color = wallType.color;
+			var wallHeight = wallType.height;
+			var lineHeight = (c.height / wallDistance) | 0;
+			var drawEnd = lineHeight / 2 + c.height / 2;
+			lineHeight *= wallHeight + 1;
+			var drawStart = -lineHeight / 2 + c.height / 2;
+			currentBuffer.start = drawStart;
+			currentBuffer.end = drawEnd;
+			currentBuffer.x = x; 
+			currentBuffer.distance = wallDistance;
+			if (color instanceof Texture) {
+				currentBuffer.type = TEXTURED_WALL;
+				var texture = color;
+				currentBuffer.texture = texture;
+				var wallX;
+				if (side === X_HIT) {
+					wallX = rayPosY + wallDistance * rayDirY;
+				} else {
+					wallX = rayPosX + wallDistance * rayDirX;
+				}
+				wallX -= wallX | 0;
+				var textureX = (wallX * texture.image.width) | 0;
+				if ((side === X_HIT && rayDirX > 0) || (side === Y_HIT && rayDirY < 0)) {
+					textureX = texture.image.width - textureX - 1;
+				}
+				currentBuffer.textureX = textureX;
+			} else {
+				currentBuffer.type = COLORED_WALL;
+				currentBuffer.color = color;
+			}
+		}
+
+	},
 	render: function(zBuffer) {
 		zBuffer.forEach(function(currentBuffer) {
 			var side = currentBuffer.side;
@@ -339,7 +348,7 @@ Player.prototype = {
 				}
 				ctx.fillStyle = "rgb("+color[0]+", "+color[1]+", "+color[2]+")";
 				ctx.fillRect(x, drawStart, 1, lineHeight);
-			} else if (currentBuffer.type = SPRITE) {
+			} else if (currentBuffer.type === SPRITE) {
 				ctx.globalAlpha = 1;
 				var drawX = currentBuffer.drawX;
 				var drawY = currentBuffer.drawY;
@@ -356,7 +365,7 @@ function Grid(wallGrid, wallTextures, sprites) {
 	this.wallGrid = wallGrid;
 	this.height = wallGrid.length;
 	this.width = this.height === 0 ? 0 : wallGrid[0].length;
-	this.wallTextures = wallTextures || {};
+	this.wallTypes = wallTextures || {};
 	this.sprites = sprites || [];
 	return this;
 }
@@ -381,35 +390,38 @@ function Sprite(texture, x, y, z) {
 	this.y = y;
 	this.z = z;
 }
+function Wall(height, color) {
+	this.height = height;
+	this.color = color;
+}
 var player = new Player();
 player.x = player.y = 3;
 player.map = new Grid([
-  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-  [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-  [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-  [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-  [1,0,0,0,0,0,1,1,1,1,1,0,0,0,0,1,0,1,0,1,0,0,0,1],
-  [1,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1],
-  [1,0,0,0,0,0,1,0,0,0,1,0,0,0,0,1,0,0,0,1,0,0,0,1],
-  [1,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1],
-  [1,0,0,0,0,0,1,1,0,1,1,0,0,0,0,1,0,1,0,1,0,0,0,1],
-  [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-  [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-  [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-  [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-  [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-  [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-  [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-  [1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-  [1,1,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-  [1,1,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-  [1,1,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-  [1,1,0,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-  [1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-  [1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
-], {'1': new Texture('walls.png')}, [new Sprite(new Texture('walls.png'), 4, 1, 4)]);
-
+	[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+	[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+	[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+	[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+	[1,0,0,0,0,0,1,1,1,1,1,0,0,0,0,1,0,1,0,1,0,0,0,1],
+	[1,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1],
+	[1,0,0,0,0,0,1,0,0,0,1,0,0,0,0,1,0,0,0,1,0,0,0,1],
+	[1,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1],
+	[1,0,0,0,0,0,1,1,2,1,1,0,0,0,0,1,0,1,0,1,0,0,0,1],
+	[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+	[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+	[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+	[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+	[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+	[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+	[1,0,0,0,0,0,0,0,0,0,0,0,0,0,2,1,0,0,0,0,0,0,0,1],
+	[1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+	[1,1,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+	[1,1,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+	[1,1,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+	[1,1,0,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+	[1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+	[1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+	[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+], {'1': new Wall(0, new Texture('walls.png')), '2': new Wall(3, [255, 0, 0]) }, [new Sprite(new Texture('walls.png'), 4, 1, 4)]);
 var keyCodes = {
 	"38": "up",
 	"40": "down",
