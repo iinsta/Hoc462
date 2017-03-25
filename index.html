@@ -286,9 +286,10 @@ Player.prototype = {
 			var transformY = invDet * (-self.planeY * spriteX + self.planeX * spriteY);
 			if (transformY > 0) {
 				var spriteScreenX = (c.width / 2) * (1 + transformX / transformY);
-				var spriteHeight = Math.abs((c.height / transformY));
-				var drawStartY = -spriteHeight / 2 + c.height / 2;
-				var drawEndY = spriteHeight / 2 + c.height / 2;
+				var spriteHeight = Math.abs(c.height / transformY);
+				var imaginedHeight = (sprite.y + 1) * spriteHeight;
+				var drawStartY = -imaginedHeight / 2 + c.height / 2;
+				var drawEndY = imaginedHeight / 2 + c.height / 2;
 				var spriteWidth = Math.abs(c.height / transformY);
 				var drawStartX = -spriteWidth / 2 + spriteScreenX;
 				var drawEndX = spriteWidth / 2 + spriteScreenX;
@@ -407,7 +408,7 @@ player.map = new Grid([
   [1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
   [1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
   [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
-], {'1': new Texture('walls.png')}, [new Sprite(new Texture('walls.png'), 4, 3, 4)]);
+], {'1': new Texture('walls.png')}, [new Sprite(new Texture('walls.png'), 4, 1, 4)]);
 
 var keyCodes = {
 	"38": "up",
