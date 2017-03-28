@@ -241,8 +241,6 @@ Player.prototype = {
 			var sideDistY = 0;
 			var wallDistance = 0;
 			var giveUp = false;
-			var currentBuffer = {};
-			zBuffer.push(currentBuffer);
 			if (rayDirX < 0) {
 				stepX = -1;
 				sideDistX = (rayPosX - mapX) * deltaDistX;
@@ -277,7 +275,6 @@ Player.prototype = {
 				}
 			}
 			if (giveUp) {continue;}
-			currentBuffer.side = side;
 			if (side === X_HIT) {
 				wallDistance = (mapX - rayPosX + (1 - stepX) / 2) / rayDirX;
 			} else {
@@ -289,6 +286,16 @@ Player.prototype = {
 			var drawEnd = lineHeight / 2 + c.height / 2;
 			lineHeight *= wallHeight + 1;
 			var drawStart = -lineHeight / 2 + c.height / 2;
+			var exactHitPositionX = rayPosY + wallDistance * rayDirY;
+			var exactHitPositionY = rayPosX + wallDistance * rayDirX;
+			if (side === X_HIT) {
+				var wallX = exactHitPositionX;
+			} else {
+				var wallX = exactHitPositionY;
+			}
+			var currentBuffer = {};
+			zBuffer.push(currentBuffer);
+			currentBuffer.side = side;
 			currentBuffer.start = drawStart;
 			currentBuffer.end = drawEnd;
 			currentBuffer.x = x; 
@@ -297,12 +304,6 @@ Player.prototype = {
 				currentBuffer.type = TEXTURED_WALL;
 				var texture = color;
 				currentBuffer.texture = texture;
-				var wallX;
-				if (side === X_HIT) {
-					wallX = rayPosY + wallDistance * rayDirY;
-				} else {
-					wallX = rayPosX + wallDistance * rayDirX;
-				}
 				wallX -= wallX | 0;
 				var textureX = (wallX * texture.image.width) | 0;
 				if ((side === X_HIT && rayDirX > 0) || (side === Y_HIT && rayDirY < 0)) {
