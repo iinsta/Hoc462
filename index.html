@@ -327,6 +327,7 @@ Player.prototype = {
 				var texture = currentBuffer.texture;
 				var textureX = currentBuffer.textureX;
 				var x = currentBuffer.x;
+				ctx.globalAlpha = 1;
 				ctx.fillStyle = "black";
 				ctx.fillRect(x, drawStart, 1, lineHeight);
 				if (side === Y_HIT) {
@@ -338,6 +339,7 @@ Player.prototype = {
 			} else if (currentBuffer.type === COLORED_WALL) {
 				var x = currentBuffer.x;
 				var color = currentBuffer.color;
+				ctx.globalAlpha = 1;
 				ctx.fillStyle = "black";
 				ctx.fillRect(x, drawStart, 1, lineHeight);
 				if (side === Y_HIT) {
