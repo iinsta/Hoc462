@@ -192,7 +192,6 @@ Player.prototype = {
 		Object.keys(this.map.wallTypes).forEach(function(typeID) {
 			self.castRaysToSpecifiedWallType(self.map.wallTypes[typeID], zBuffer);
 		});
-		console.log(zBuffer);
 		this.map.sprites.forEach(function(sprite) {
 			var spriteX = sprite.x - self.x;
 			var spriteY = sprite.z - self.y;
