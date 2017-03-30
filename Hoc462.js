@@ -258,7 +258,7 @@ class Player {
 			var wallHeight = wallType.height;
 			var lineHeight = (c.height / wallDistance) | 0;
 			var drawEnd = lineHeight / 2 + c.height / 2;
-			lineHeight *= 2 * wallHeight - 2;
+			lineHeight *= wallHeight <= 0 ? 0 : 2 * wallHeight - 2;
 			var drawStart = -lineHeight / 2 + c.height / 2;
 			var exactHitPositionX = rayPosY + wallDistance * rayDirY;
 			var exactHitPositionY = rayPosX + wallDistance * rayDirX;
@@ -406,7 +406,7 @@ player.map = new Grid([
 	[1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
 	[1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
 	[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
-], {'1': new Wall(0, new Texture('walls.png')), '2': new Wall(3, [255, 0, 0]) }, [new Sprite(new Texture('walls.png'), 4, 1, 4)]);
+], {'1': new Wall(2, new Texture('walls.png')), '2': new Wall(3, [255, 0, 0]) }, [new Sprite(new Texture('walls.png'), 4, 1, 4)]);
 var keyCodes = {
 	"38": "up",
 	"40": "down",
