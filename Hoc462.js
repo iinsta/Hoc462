@@ -258,7 +258,7 @@ class Player {
 			var wallHeight = wallType.height;
 			var lineHeight = (c.height / wallDistance) | 0;
 			var drawEnd = lineHeight / 2 + c.height / 2;
-			lineHeight *= wallHeight + 1;
+			lineHeight *= 2 * wallHeight - 2;
 			var drawStart = -lineHeight / 2 + c.height / 2;
 			var exactHitPositionX = rayPosY + wallDistance * rayDirY;
 			var exactHitPositionY = rayPosX + wallDistance * rayDirX;
