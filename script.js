@@ -114,13 +114,19 @@ var Player = function () {
 		value: function move() {
 			var moveStep = this.speed * this.moveSpeed;
 			this.rot += this.dir * this.rotSpeed;
-			var newX = this.x + Math.cos(player.rot) * moveStep;
-			var newY = this.y + Math.sin(player.rot) * moveStep;
-			var currentMapBlock = this.map.get(newX | 0, newY | 0);
-			if (currentMapBlock === OUTSIDE_THE_MAP || currentMapBlock > 0) {
-				this.stopMoving();
-				return;
-			};
+			var currentMovingDistance, newX, newY, currentMapBlock;
+			var moveDistance = moveStep;
+			do {
+				currentMovingDistance = moveDistance - moveStep;
+				newX = this.x + Math.cos(player.rot) * currentMovingDistance;
+				newY = this.y + Math.sin(player.rot) * currentMovingDistance;
+				currentMapBlock = this.map.get(newX | 0, newY | 0);
+				if (currentMapBlock === OUTSIDE_THE_MAP || currentMapBlock > 0) {
+					this.stopMoving();
+					return;
+				}
+				moveStep -= .1;
+			} while (moveStep > 0);
 			this.x = newX;
 			this.y = newY;
 			this.rotateDirectionAndPlane(this.dir * this.rotSpeed);
