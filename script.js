@@ -58,6 +58,7 @@ var RIGHT = 1;
 var TEXTURED_WALL = 10;
 var COLORED_WALL = 11;
 var SPRITE = 12;
+var EPSILON = 1e-6;
 var SORT_BY_DISTANCE = function SORT_BY_DISTANCE(a, b) {
 	return b.distance - a.distance;
 };
@@ -114,19 +115,13 @@ var Player = function () {
 		value: function move() {
 			var moveStep = this.speed * this.moveSpeed;
 			this.rot += this.dir * this.rotSpeed;
-			var currentMovingDistance, newX, newY, currentMapBlock;
-			var moveDistance = moveStep;
-			do {
-				currentMovingDistance = moveDistance - moveStep;
-				newX = this.x + Math.cos(player.rot) * currentMovingDistance;
-				newY = this.y + Math.sin(player.rot) * currentMovingDistance;
-				currentMapBlock = this.map.get(newX | 0, newY | 0);
-				if (currentMapBlock === OUTSIDE_THE_MAP || currentMapBlock > 0) {
-					this.stopMoving();
-					return;
-				}
-				moveStep -= .1;
-			} while (moveStep > 0);
+			var newX = this.x + Math.cos(player.rot) * moveStep;
+			var newY = this.y + Math.sin(player.rot) * moveStep;
+			var currentMapBlock = this.map.get(newX | 0, newY | 0);
+			if (currentMapBlock === OUTSIDE_THE_MAP || currentMapBlock > 0) {
+				this.stopMoving();
+				return;
+			}
 			this.x = newX;
 			this.y = newY;
 			this.rotateDirectionAndPlane(this.dir * this.rotSpeed);
@@ -470,7 +465,19 @@ function whileDragging(e) {
 	mouseY = event.pageY - c.offsetTop;
 	if (isDragging) {
 		player.setRot(player.rot + (mouseX - pmouseX) / c.width * 2);
-		player.speed = -(mouseY - pmouseY) / c.height * 15;
+		var moveDistance = -(mouseY - pmouseY) / c.height * 15;
+		var fractionalPart = moveDistance % 1;
+		var integerPart = moveDistance | 0;
+		console.log(integerPart);
+		player.speed = integerPart < 0 ? DOWN : UP;
+		for (var i = 0; i < Math.abs(integerPart); i++) {
+			var result = player.move();
+			if (!result) {
+				return;
+			}
+		}
+		player.speed = fractionalPart;
+		player.move();
 	}
 }
 function startDragging(e) {
