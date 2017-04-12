@@ -41,6 +41,9 @@ var log500Times;
 		counter++;
 	};
 })();
+var stats = new Stats();
+stats.showPanel(1);
+document.body.appendChild(stats.dom);
 canvasDebugger([ctx, mapCtx]);
 var MINI_MAP_SCALE = 8;
 var OUTSIDE_THE_MAP = -1;
@@ -174,20 +177,24 @@ var Player = function () {
 	}, {
 		key: "castRays",
 		value: function castRays() {
-			var _this = this;
-
 			this.move();
 			var visibleSprites = [];
 			var zBuffer = [];
-			Object.keys(this.map.wallTypes).forEach(function (typeID) {
-				_this.castRaysToSpecifiedWallType(_this.map.wallTypes[typeID], zBuffer);
-			});
-			this.map.sprites.forEach(function (sprite) {
-				var spriteX = sprite.x - _this.x;
-				var spriteY = sprite.z - _this.y;
-				var invDet = 1 / (_this.planeX * _this.dirY - _this.dirX * _this.planeY);
-				var transformX = invDet * (_this.dirY * spriteX - _this.dirX * spriteY);
-				var transformY = invDet * (-_this.planeY * spriteX + _this.planeX * spriteY);
+			var wallTypes = Object.keys(this.map.wallTypes);
+			var numberOfWallTypes = wallTypes.length;
+			for (var i = 0; i < numberOfWallTypes; i++) {
+				var typeID = wallTypes[i];
+				this.castRaysToSpecifiedWallType(this.map.wallTypes[typeID], zBuffer);
+			}
+			var sprites = this.map.sprites;
+			var numberOfSprites = sprites.length;
+			for (var i = 0; i < numberOfSprites; i++) {
+				var sprite = sprites[i];
+				var spriteX = sprite.x - this.x;
+				var spriteY = sprite.z - this.y;
+				var invDet = 1 / (this.planeX * this.dirY - this.dirX * this.planeY);
+				var transformX = invDet * (this.dirY * spriteX - this.dirX * spriteY);
+				var transformY = invDet * (-this.planeY * spriteX + this.planeX * spriteY);
 				if (transformY > 0) {
 					var spriteScreenX = c.width / 2 * (1 + transformX / transformY);
 					var spriteHeight = Math.abs(c.height / transformY);
@@ -210,7 +217,7 @@ var Player = function () {
 						distance: transformY
 					});
 				}
-			});
+			}
 			return zBuffer.sort(SORT_BY_DISTANCE);
 		}
 	}, {
@@ -313,15 +320,26 @@ var Player = function () {
 	}, {
 		key: "render",
 		value: function render(zBuffer) {
-			zBuffer.forEach(function (currentBuffer) {
+			var bufferLength = zBuffer.length;
+			for (var i = 0; i < bufferLength; i++) {
+				var currentBuffer = zBuffer[i];
 				var side = currentBuffer.side;
 				var drawStart = currentBuffer.start;
 				var drawEnd = currentBuffer.end;
+				var side = currentBuffer.side,
+				    texture = currentBuffer.texture,
+				    textureX = currentBuffer.textureX,
+				    color = currentBuffer.color,
+				    x = currentBuffer.x,
+				    drawX = currentBuffer.drawX,
+				    drawY = currentBuffer.drawY,
+				    width = currentBuffer.width,
+				    height = currentBuffer.height,
+				    drawStart = currentBuffer.start,
+				    drawEnd = currentBuffer.end;
+
 				var lineHeight = drawEnd - drawStart;
 				if (currentBuffer.type === TEXTURED_WALL) {
-					var texture = currentBuffer.texture;
-					var textureX = currentBuffer.textureX;
-					var x = currentBuffer.x;
 					ctx.globalAlpha = 1;
 					ctx.fillStyle = "black";
 					ctx.fillRect(x, drawStart, 1, lineHeight);
@@ -332,8 +350,6 @@ var Player = function () {
 					}
 					ctx.drawImage(texture.image, textureX, 0, 1, texture.image.height, x, drawStart, 1, lineHeight);
 				} else if (currentBuffer.type === COLORED_WALL) {
-					var x = currentBuffer.x;
-					var color = currentBuffer.color;
 					ctx.globalAlpha = 1;
 					ctx.fillStyle = "black";
 					ctx.fillRect(x, drawStart, 1, lineHeight);
@@ -346,14 +362,9 @@ var Player = function () {
 					ctx.fillRect(x, drawStart, 1, lineHeight);
 				} else if (currentBuffer.type === SPRITE) {
 					ctx.globalAlpha = 1;
-					var drawX = currentBuffer.drawX;
-					var drawY = currentBuffer.drawY;
-					var texture = currentBuffer.texture;
-					var width = currentBuffer.width;
-					var height = currentBuffer.height;
 					ctx.drawImage(texture.image, 0, 0, texture.image.width, texture.image.height, drawX, drawY, width, height);
 				}
-			});
+			}
 		}
 	}]);
 
@@ -423,12 +434,10 @@ var keyCodes = {
 	"39": "right"
 };
 document.addEventListener("keydown", function (e) {
-	e = e || window.event;
 	player.startMoving(keyCodes[e.keyCode]);
 });
 document.addEventListener("keyup", function (e) {
-	e = e || window.event;
-	player.stopMoving(keyCodes[e.keyCode]);
+	player.stopMoving();
 });
 var isDragging = false;
 c.addEventListener("mousedown", startDragging);
@@ -477,13 +486,16 @@ function endDragging(e) {
 function renderLoop() {
 	ctx.clearRect(0, 0, c.width, c.height);
 	player.render(player.castRays());
+	drawMiniMap();
 }
 requestAnimationFrame(function animate() {
+	stats.begin();
 	if (c.clientWidth !== c.width || c.clientHeight !== c.height) {
 		c.width = c.clientWidth;
 		c.height = c.clientHeight;
 	}
 	renderLoop();
-	drawMiniMap();
+	stats.end();
+	stats.update();
 	requestAnimationFrame(animate);
 });
