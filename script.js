@@ -58,7 +58,6 @@ var RIGHT = 1;
 var TEXTURED_WALL = 10;
 var COLORED_WALL = 11;
 var SPRITE = 12;
-var EPSILON = 1e-6;
 var SORT_BY_DISTANCE = function SORT_BY_DISTANCE(a, b) {
 	return b.distance - a.distance;
 };
@@ -468,7 +467,6 @@ function whileDragging(e) {
 		var moveDistance = -(mouseY - pmouseY) / c.height * 15;
 		var fractionalPart = moveDistance % 1;
 		var integerPart = moveDistance | 0;
-		console.log(integerPart);
 		player.speed = integerPart < 0 ? DOWN : UP;
 		for (var i = 0; i < Math.abs(integerPart); i++) {
 			var result = player.move();

@@ -50,7 +50,6 @@ const RIGHT = 1;
 const TEXTURED_WALL = 10;
 const COLORED_WALL = 11;
 const SPRITE = 12;
-const EPSILON = 1e-6;
 const SORT_BY_DISTANCE = (a, b) => {return b.distance - a.distance};
 function drawMiniMap() {
 	if (minimap.width !== player.map.width * MINI_MAP_SCALE || minimap.height !== player.map.height * MINI_MAP_SCALE) {
@@ -461,7 +460,6 @@ function whileDragging(e) {
 		var moveDistance = -(mouseY - pmouseY) / c.height * 15;
 		var fractionalPart = moveDistance % 1;
 		var integerPart = moveDistance | 0;
-		console.log(integerPart);
 		player.speed = integerPart < 0 ? DOWN : UP;
 		for (var i = 0; i < Math.abs(integerPart); i++) {
 			var result = player.move();
