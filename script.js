@@ -363,7 +363,6 @@ var Player = function () {
 				} else if (currentBuffer.type === SPRITE) {
 					ctx.globalAlpha = 1;
 					ctx.drawImage(texture.image, drawX | 0, drawY | 0, width | 0, height | 0);
-					debugger;
 				}
 			}
 		}
