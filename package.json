@@ -2,7 +2,7 @@
   "name": "hoc462",
   "version": "1.0.0",
   "scripts": {
-    "build": "babel Hoc462.js --out-file script.js"
+    "build": "babel Hoc462.js --out-file script.js>>log"
   },
   "devDependencies": {
     "babel-cli": "^6.24.0",
