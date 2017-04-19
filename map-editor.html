@@ -1,15 +1,15 @@
 <!DOCTYPE html>
-<meta charset='utf-8'>
+<meta charset="utf-8">
 <head>
 	<title>Hoc462 Room Planner</title>
+	<link rel="stylesheet" href="jstree.css">
 	<style>
 		body {
 			margin: 0;
 			font-family: Arial;
 		}
 		#sidebar {
-			float: left;
-			width: 25%;
+			width: 25vw;
 			height: 100vh;
 			background-color: #ffeb3b;
 			line-height: 32px;
@@ -30,33 +30,44 @@
 			float: right;
 			font-size: 16pt;
 		}
-		#timeline .item {
-			width: 80%;
-			height: 32px;
-			background-color: white;
-			border: 2px solid black;
-			border-color: black;
-			font-size: 14pt;
-		}
 		#map-editor {
-			float: right;
-			width: 75%;
+			position: absolute;
+			top: 0px;
+			left: 25vw;
+			width: 75vw;
 			height: 100vh;
 			background-color: black;
 		}
 	</style>
 </head>
 <body>
-	<div id='sidebar'>
-		<div id='logo-and-name'>
-			<img id='app-logo' src='favicon.svg'>
-			<div id='app-name'>Hoc462</div>
-		</div>
-		<div id='timeline'>
-			<div class="item">Move forward</div>
-		</div>
+	<div id="sidebar">
+	<div id="logo-and-name">
+	<img id="app-logo" src="favicon.svg">
+	<div id="app-name">Hoc462</div>
 	</div>
-	<div id='map-editor'>
+	<div id="timeline">
+		<ul>
+			<li>
+				Worlds
+				<ul>
+					<li>Untitled</li>
+				</ul>
+			</li>
+			<li>
+				Sprites
+			</li>
+			<li>
+				Animation
+			</li>
+		</ul>
+	</div>
+	<div id="map-editor">
 		<canvas id="grid"></canvas>
 	</div>
+	<script src="jquery.js"></script>
+	<script src="jstree.js"></script>
+	<script>
+		$("#timeline").jstree();
+	</script>
 </body>
