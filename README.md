@@ -6,7 +6,7 @@ This repository is using a raycasting engine. But raycasting is slow on mobile s
 Now I am developing Hoc462 in a private Glitch app. [Demo here.](https://hoc462.glitch.me)
 
 ## What is Hoc462?
-Hoc462 is an app to create 3D presentations quickly and easily.
+Hoc462 is an app for creating 3D presentations quickly and easily.
 To create a Hoc462 presentation, first you need to create a map.
 
 ![](map.png)
