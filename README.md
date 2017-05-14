@@ -7,19 +7,21 @@ Now I am developing Hoc462 in a private Glitch app. [Demo here.](https://hoc462.
 
 ## What is Hoc462?
 Hoc462 is an app for creating 3D presentations quickly and easily.
-To create a Hoc462 presentation, first you need to create a map.
+To create a Hoc462 presentation:
+
+**Step 1:** Create a map.
 
 ![](map.png)
 
 You need to set color/texture and height for walls.
 
-Then you need to add sprites.
+**Step 2:** Add sprites.
 
 ![](sprite-editor.png)
 
-You need to set position and size for sprites. Sprites can have multiple costumes.
+Then set position and size for sprites. Sprites can have multiple costumes.
 
-Finally you have to add animations and some text.
+**Step 3:** Add animations and some text.
 
 ```
 Slide 1
