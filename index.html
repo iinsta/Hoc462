@@ -1,35 +1,22 @@
 <!DOCTYPE html>
-<meta charset="utf-8">
-<html manifest="app.appcache">
-	<head>
-		<title>Hoc462</title>
-		<script src="jquery.js"></script>
-		<link rel="stylesheet" href="font-awesome/css/font-awesome.css">
-		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
-		<script src="https://code.jquery.com/jquery-3.1.1.slim.min.js" integrity="sha384-A7FZj7v+d/sdmMqp/nOQwliLvUsJfDHW+k9Omg/a/EheAdgtzNs3hpfag6Ed950n" crossorigin="anonymous"></script>
-		<script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
-		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
-		<style>
-#c {
-	position: absolute;
-	top: 0;
-	left: 0;
-	width: 100vw;
-	height: 100vh;
-	background-color: black;
-}
-#minimap {
-	position: absolute;
-	top: 0;
-	left: 0;
-}
-		</style>
-	</head>
-	<body>
-		<canvas id="c" width="640" height="640"></canvas>
-		<canvas id="minimap" width="640" height="640"></canvas>
-		<script src="stats.js"></script>
-		<script src="script.js"></script>
-	</body>
+<html>
+  <head>
+    <title>Hoc462</title>
+    <script src="https://aframe.io/releases/0.5.0/aframe.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="underscore.js"></script>
+  </head>
+  <body>
+    <style>
+      .a-enter-vr {
+        display: none !important;
+      }
+    </style>
+    <a-scene>
+      <a-camera wasd-controls-enabled="false" look-controls-enabled="false"></a-camera>
+      <a-plane src="https://cdn.glitch.com/b870d9ec-1139-44f9-b462-223e4a2c74e7%2Ffloor.jpg?1490307896453" rotation="-90 0 0" height="100" width="100"></a-plane>
+    </a-scene>
+    <script src="Hoc462.js"></script
+    <script src="scene.js"></script>
+  </body>
 </html>
-
