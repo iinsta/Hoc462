@@ -14,13 +14,11 @@ const createListReducer = (reducer, reducerName) => {
     switch (type) {
       case "ADD_" + reducerName:
         return { ...state, array: [...state.array, payload] };
-        break;
       case "DELETE_" + reducerName:
         return {
           ...state,
           array: state.array.filter(element => element.id !== payload.id)
         };
-        break;
       case "SWAP_" + reducerName + "S":
         const [item1, item2] = state.array.filter(
           item => item.id === payload.firstId || item.id === payload.secondId
@@ -32,7 +30,6 @@ const createListReducer = (reducer, reducerName) => {
           ...state,
           array: swapElementsInArray(state.array, item1, item2)
         };
-        break;
       case "EDIT_" + reducerName:
         return {
           ...state,
@@ -43,16 +40,13 @@ const createListReducer = (reducer, reducerName) => {
                 : element
           )
         };
-        break;
       case "SELECT_" + reducerName:
         return {
           ...state,
           selectedId: payload.id
         };
-        break;
       default:
         return reducer(state, action);
-        break;
     }
   };
 };

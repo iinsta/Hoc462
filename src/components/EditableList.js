@@ -7,8 +7,8 @@ const EditableList = ({
   name,
   itemType,
   onAdd,
-  onDelete = () => dispatch(deleteItem(itemType, selectedItemId)),
-  dispatch
+  dispatch,
+  onDelete = () => dispatch(deleteItem(itemType, selectedItemId))
 }) => {
   const onSelect = id => dispatch(selectItem(itemType, id));
   const currentItemIndex = items.indexOf(selectedItem);

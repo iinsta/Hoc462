@@ -10,7 +10,7 @@ import {
 const ListInMenuAction = ({ title, icon, ...props }) => {
   return (
     <li role="presentation" {...props}>
-      <a role="menuitem" tabIndex="-1" href="javascript:void 0">
+      <a role="menuitem" tabIndex="-1">
         <span className={"glyphicon glyphicon-" + icon} />
         {" " + title}
       </a>

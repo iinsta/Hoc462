@@ -10,8 +10,8 @@ const modalReducer = (
   switch (type) {
     case "MODAL":
       return { currentModal: modalType, props, open };
-      break;
+    default:
+      return state;
   }
-  return state;
 };
 export default modalReducer;

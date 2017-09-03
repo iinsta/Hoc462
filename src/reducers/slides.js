@@ -6,7 +6,6 @@ const slidesReducer = createListReducer((state, {type, payload}) => {
         ...state,
         array: state.array.filter(slide => slide.worldId !== payload.id)
       };
-      break;
     default:
       return state;
   }

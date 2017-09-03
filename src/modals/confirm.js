@@ -1,13 +1,6 @@
 import React from "react";
-import {
-  Modal,
-  FormControl,
-  FormGroup,
-  ControlLabel,
-  Button
-} from "react-bootstrap";
+import { Modal, Button } from "react-bootstrap";
 import { connect } from "react-redux";
-import _ from "underscore";
 import { closeModal } from "../actions";
 class Confirm extends React.Component {
   done(flag) {
@@ -16,7 +9,7 @@ class Confirm extends React.Component {
     dispatch(closeModal());
   }
   render() {
-    const { title, content, dispatch } = this.props;
+    const { title, content } = this.props;
     return (
       <div>
         <Modal.Header>
