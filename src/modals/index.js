@@ -1,3 +1,4 @@
 import addSlide from "./addSlide";
 import addWorld from "./addWorld";
-export { addSlide, addWorld };
+import deleteWorld from "./deleteWorld";
+export { addSlide, addWorld, deleteWorld };

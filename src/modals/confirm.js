@@ -9,13 +9,11 @@ import {
 import { connect } from "react-redux";
 import _ from "underscore";
 import { closeModal } from "../actions";
-class Prompt extends React.Component {
-  ok() {
-    const { onFinish } = this.props;
-    
-  }
-  cancel() {
-    const { onFinish } = this.props;
+class Confirm extends React.Component {
+  done(flag) {
+    const { onFinish, dispatch } = this.props;
+    onFinish(flag);
+    dispatch(closeModal());
   }
   render() {
     const { title, content, dispatch } = this.props;
@@ -27,19 +25,18 @@ class Prompt extends React.Component {
           </Modal.Title>
         </Modal.Header>
 
-        <Modal.Body />
+        <Modal.Body>
+          {content}
+        </Modal.Body>
 
         <Modal.Footer>
-          <Button bsStyle="primary" onClick={() => this.ok()}>
+          <Button bsStyle="primary" onClick={() => this.done(true)}>
             OK
           </Button>
-          <Button onClick={() => this.cancel()}>Cancel</Button>
+          <Button onClick={() => this.done(false)}>Cancel</Button>
         </Modal.Footer>
       </div>
     );
   }
 }
-const mapDispatchToProps = dispatch => {
-  return { dispatch };
-};
-export default connect(undefined, mapDispatchToProps)(Prompt);
+export default connect()(Confirm);

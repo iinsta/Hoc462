@@ -6,10 +6,10 @@ const modalReducer = (
   action
 ) => {
   const { type, payload = {} } = action;
-  const { open = false, modalType = state.currentModal } = payload;
+  const { open = false, modalType = state.currentModal, props = {} } = payload;
   switch (type) {
     case "MODAL":
-      return { currentModal: modalType, open };
+      return { currentModal: modalType, props, open };
       break;
   }
   return state;

@@ -7,6 +7,7 @@ const EditableList = ({
   name,
   itemType,
   onAdd,
+  onDelete = () => dispatch(deleteItem(itemType, selectedItemId)),
   dispatch
 }) => {
   const onSelect = id => dispatch(selectItem(itemType, id));
@@ -18,7 +19,6 @@ const EditableList = ({
     dispatch(swapItems(itemType + "S", itemAboveId, selectedItemId));
   const moveDown = () =>
     dispatch(swapItems(itemType + "S", itemBelowId, selectedItemId));
-  const onDelete = () => dispatch(deleteItem(itemType, selectedItemId));
   const props = {
     items,
     onSelect,
