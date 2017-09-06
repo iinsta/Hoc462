@@ -4,7 +4,7 @@ import { Nav, Navbar } from "react-bootstrap";
 import { createStore, applyMiddleware } from "redux";
 import { Provider } from "react-redux";
 import logger from "redux-logger";
-import { Modal, Slides, Worlds } from "./components";
+import { Modal, Slides, Worlds, MapEditor } from "./components";
 import reducer from "./reducers";
 import "./style.css";
 const store = createStore(
@@ -39,6 +39,7 @@ const App = () => {
           </Nav>
         </Navbar>
         <Modal />
+        <MapEditor />
       </div>
     </Provider>
   );
