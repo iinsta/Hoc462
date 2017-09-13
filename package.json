@@ -13,12 +13,15 @@
     "underscore": "^1.8.3"
   },
   "devDependencies": {
-    "react-scripts": "1.0.0"
+    "react-scripts": "1.0.0",
+    "standard": "^10.0.3"
   },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom",
+    "stupid": "standard",
+    "unstupid": "standard --fix",
     "eject": "react-scripts eject"
   }
 }

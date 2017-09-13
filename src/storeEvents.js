@@ -1,2 +1,2 @@
-const storeEvents = document.createElement("div");
-export default storeEvents;
+const storeEvents = document.createElement('div')
+export default storeEvents

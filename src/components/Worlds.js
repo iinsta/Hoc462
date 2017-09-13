@@ -1,39 +1,39 @@
-import React from "react";
-import { connect } from "react-redux";
-import EditableList from "./EditableList";
-import { openModal, deleteItem } from "../actions";
+import React from 'react'
+import { connect } from 'react-redux'
+import EditableList from './EditableList'
+import { openModal, deleteItem } from '../actions'
 export default connect(
   state => {
     const selectedItem = state.worlds.array.filter(
       world => world.id === state.worlds.selectedId
-    )[0];
+    )[0]
     return {
-      name: "Worlds",
-      itemType: "WORLD",
+      name: 'Worlds',
+      itemType: 'WORLD',
       items: state.worlds.array,
       slides: state.slides.array,
       selectedItem
-    };
+    }
   },
   dispatch => {
     return {
       dispatch,
-      onAdd: () => dispatch(openModal("addWorld")),
+      onAdd: () => dispatch(openModal('addWorld')),
       onDelete: worldDeleted =>
-        dispatch(openModal("deleteWorld", { worldDeleted }))
-    };
+        dispatch(openModal('deleteWorld', { worldDeleted }))
+    }
   }
 )(({ onDelete, slides, ...props }) =>
   <EditableList
     onDelete={() => {
-      const {selectedItem: {id: worldId}, dispatch} = props;
-      const slidesDeleted = slides.filter(slide => slide.worldId === worldId);
+      const {selectedItem: {id: worldId}, dispatch} = props
+      const slidesDeleted = slides.filter(slide => slide.worldId === worldId)
       if (slidesDeleted.length > 0) {
-        onDelete(worldId);
+        onDelete(worldId)
       } else {
-        dispatch(deleteItem("WORLD", worldId));
+        dispatch(deleteItem('WORLD', worldId))
       }
     }}
     {...props}
   />
-);
+)
