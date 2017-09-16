@@ -23,5 +23,6 @@
     "stupid": "standard",
     "unstupid": "standard --fix",
     "eject": "react-scripts eject"
-  }
+  },
+  "license": "MIT"
 }
