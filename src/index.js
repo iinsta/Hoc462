@@ -19,6 +19,7 @@ const store = createStore(
   },
   applyMiddleware(logger)
 )
+window.store = store
 const App = () => {
   return (
     <Provider store={store}>

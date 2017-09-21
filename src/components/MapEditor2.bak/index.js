@@ -6,7 +6,7 @@ import THREELib from 'three-js'
 import { connect } from 'react-redux'
 import GridTexture from './GridTexture'
 import Mouse3d from './Mouse3d'
-const THREE = THREELib(['OrbitControls'])
+const THREE = THREELib([ 'OrbitControls' ])
 const MapEditor = (mapEditorRoot, dispatch) => {
   const renderer = new THREE.WebGLRenderer({ antialias: true })
   const canvas = renderer.domElement
@@ -50,12 +50,9 @@ const MapEditor = (mapEditorRoot, dispatch) => {
   planeTexture.minFilter = THREE.LinearFilter
   const plane = new THREE.Mesh(
     new THREE.PlaneGeometry(mapWidth * wallSize, mapHeight * wallSize),
-    new THREE.MeshBasicMaterial({
-      map: planeTexture,
-      side: THREE.DoubleSide
-    })
+    new THREE.MeshBasicMaterial({ map: planeTexture, side: THREE.DoubleSide })
   )
-  plane.rotation.x = -Math.PI / 2
+  plane.rotation.x = (-Math.PI) / 2
   scene.add(plane)
   const render = () => {
     planeTexture.needsUpdate = true
@@ -106,8 +103,8 @@ const MapEditor = (mapEditorRoot, dispatch) => {
     )
     intersects[0].object.worldToLocal(clickPositionRelativeToPlane)
     const { x: planeX, y: planeY } = clickPositionRelativeToPlane
-    const gridX = (planeX / wallSize + mapWidth / 2) | 0
-    const gridY = mapHeight - 1 - ((planeY / wallSize + mapHeight / 2) | 0)
+    const gridX = planeX / wallSize + mapWidth / 2 | 0
+    const gridY = mapHeight - 1 - (planeY / wallSize + mapHeight / 2 | 0)
     if (phase === 'drag started') {
       gridTexture.select({
         start: { x: gridX, y: gridY },
@@ -121,14 +118,13 @@ const MapEditor = (mapEditorRoot, dispatch) => {
   render()
 }
 class MapEditorWrapper extends React.Component {
-  constructor() {
+  constructor () {
     super()
     this.userHasJustSelectedAWorld = false
   }
   componentWillReceiveProps (next) {
-    this.userHasJustSelectedAWorld =
-      next.userSelectedAWorld && !this.props.userSelectedAWorld
-
+    this.userHasJustSelectedAWorld = next.userSelectedAWorld &&
+      !this.props.userSelectedAWorld
   }
   componentDidUpdate () {
     const root = ReactDOM.findDOMNode(this.root)
@@ -143,7 +139,7 @@ class MapEditorWrapper extends React.Component {
         <div>
           <Jumbotron
             className='map-editor'
-            ref={element => (this.root = element)}
+            ref={element => this.root = element}
           />
         </div>
       )
@@ -153,9 +149,9 @@ class MapEditorWrapper extends React.Component {
   }
 }
 export default connect(state => {
-  const selectedItem = state.worlds.array.filter(
+  const selectedItem = state.worlds.array.find(
     world => world.id === state.worlds.selectedId
-  )[0]
+  )
   if (selectedItem === undefined) {
     return { userSelectedAWorld: false }
   }

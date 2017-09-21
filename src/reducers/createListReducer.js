@@ -13,7 +13,11 @@ const createListReducer = (reducer, reducerName) => {
     const { type, payload } = action
     switch (type) {
       case 'ADD_' + reducerName:
-        return { ...state, array: [...state.array, payload] }
+        return {
+          ...state,
+          array: [...state.array, payload],
+          selectedId: payload.id
+        }
       case 'DELETE_' + reducerName:
         return {
           ...state,

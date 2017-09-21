@@ -4,9 +4,9 @@ import EditableList from './EditableList'
 import { openModal, deleteItem } from '../actions'
 export default connect(
   state => {
-    const selectedItem = state.worlds.array.filter(
+    const selectedItem = state.worlds.array.find(
       world => world.id === state.worlds.selectedId
-    )[0]
+    )
     return {
       name: 'Worlds',
       itemType: 'WORLD',

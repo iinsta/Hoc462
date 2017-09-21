@@ -3,9 +3,9 @@ import EditableList from './EditableList'
 import { openModal } from '../actions'
 export default connect(
   state => {
-    const selectedItem = state.slides.array.filter(
+    const selectedItem = state.slides.array.find(
       slide => slide.id === state.slides.selectedId
-    )[0]
+    )
     return {
       name: 'Slides',
       itemType: 'SLIDE',
