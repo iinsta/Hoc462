@@ -2,6 +2,7 @@ a {
   cursor: pointer;
 }
 .jumbotron.map-editor {
+  height: 80vh;
   padding-top: 0;
   padding-bottom: 0;
   margin-bottom: 0;

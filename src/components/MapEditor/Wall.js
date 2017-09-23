@@ -5,7 +5,7 @@ class Wall extends React.Component {
   componentDidMount () {
     this.object3d = new THREE.Mesh(
       new THREE.BoxGeometry(),
-      new THREE.MeshBasicMaterial()
+      new THREE.MeshPhongMaterial()
     )
     this.props.scene.add(this.object3d)
     this.updateObject()
