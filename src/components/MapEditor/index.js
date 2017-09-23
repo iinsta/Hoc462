@@ -20,7 +20,7 @@ class MapEditor extends React.Component {
     camera.add(pointLight)
     scene.add(camera)
     const renderer = new THREE.WebGLRenderer({ antialias: true })
-    renderer.setSize(500, 500)
+    renderer.setSize(500, 500) // canvas size will be changed later
     const canvas = this.canvas = renderer.domElement
     const controls = new THREE.OrbitControls(camera, canvas)
     const animate = () => {
@@ -86,7 +86,5 @@ class MapEditor extends React.Component {
 export default connect(state => ({
   walls: (state.worlds.array.find(
     world => world.id === state.worlds.selectedId
-  ) ||
-    {}).walls ||
-    []
+  ) || {}).walls || []
 }))(MapEditor)
