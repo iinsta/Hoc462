@@ -46,15 +46,18 @@ class AddSlide extends React.Component {
     const worldId = formData.get('worldId')
     const worldName = formData.get('worldName')
     const validationState = {}
-    validationState.slideNameValidationState =
-      slideName === '' ? 'error' : 'success'
-    validationState.worldIdValidationState =
-      worldId === 'EMPTY' ? 'error' : 'success'
-    validationState.worldNameValidationState =
-      worldName === '' ? 'error' : 'success'
-    const validationSuccess = Object.values(validationState).every(
-      value => value === 'success'
-    )
+    validationState.slideNameValidationState = slideName === ''
+      ? 'error'
+      : 'success'
+    validationState.worldIdValidationState = worldId === 'EMPTY'
+      ? 'error'
+      : 'success'
+    validationState.worldNameValidationState = worldName === ''
+      ? 'error'
+      : 'success'
+    const validationSuccess = Object
+      .values(validationState)
+      .every(value => value === 'success')
     this.setState(validationState)
     if (!validationSuccess) {
       return
@@ -71,21 +74,21 @@ class AddSlide extends React.Component {
     }
   }
   componentDidMount () {
-    document.querySelector('#' + this.slideNameInputControlId).name =
-      'slideName'
+    document.querySelector(
+      '#' + this.slideNameInputControlId
+    ).name = 'slideName'
     document.querySelector('#' + this.worldIdInputControlId).name = 'worldId'
   }
   render () {
-    const { dispatch, worlds } = this.props
+    const { dispatch, worlds, selectedWorldId } = this.props
     return (
       <div>
         <Modal.Header>
           <Modal.Title>Add slide</Modal.Title>
         </Modal.Header>
-
         <Modal.Body>
           <form
-            ref={element => (this.form = element)}
+            ref={element => { this.form = element }}
             onSubmit={e => e.preventDefault()}
           >
             <FormGroup
@@ -105,26 +108,30 @@ class AddSlide extends React.Component {
                 placeholder='World'
                 onChange={e => this.handleSelectWorld(e)}
               >
-                <option value='EMPTY' />
-                {worlds.map(world =>
-                  <option value={world.id} key={world.id}>
+                <option value='EMPTY' selected disabled>Choose a world</option>
+                {worlds.map(world => (
+                  <option
+                    value={world.id}
+                    key={world.id}
+                    selected={world.id === selectedWorldId}
+                    >
                     {world.name}
                   </option>
-                )}
+                  ))}
                 <option value='CREATE_NEW'>Create new...</option>
               </FormControl>
             </FormGroup>
-            {this.state.createNewWorld &&
-              <FormGroup
-                controlId={this.worldNameInputControlId}
-                validationState={this.state.worldNameValidationState}
-              >
-                <ControlLabel>World name: </ControlLabel>
-                <FormControl type='text' />
-              </FormGroup>}
+            {this.state.createNewWorld && (
+            <FormGroup
+              controlId={this.worldNameInputControlId}
+              validationState={this.state.worldNameValidationState}
+                  >
+              <ControlLabel>World name: </ControlLabel>
+              <FormControl type='text' />
+            </FormGroup>
+                )}
           </form>
         </Modal.Body>
-
         <Modal.Footer>
           <Button bsStyle='primary' onClick={() => this.addSlide()}>
             Add slide
@@ -137,7 +144,8 @@ class AddSlide extends React.Component {
 }
 const mapStateToProps = state => {
   return {
-    worlds: state.worlds.array
+    worlds: state.worlds.array,
+    selectedWorldId: state.worlds.selectedId
   }
 }
 export default connect(mapStateToProps)(AddSlide)
