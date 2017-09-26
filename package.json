@@ -10,7 +10,6 @@
     "redux": "3.7.2",
     "redux-logger": "3.0.6",
     "three-js": "^79.0.0",
-    "tinycolor": "0.0.1",
     "underscore": "^1.8.3"
   },
   "devDependencies": {
