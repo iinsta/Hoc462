@@ -1,6 +1,6 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
-import { Nav, Navbar } from 'react-bootstrap'
+import { Nav, Navbar, Col } from 'react-bootstrap'
 import { createStore, applyMiddleware } from 'redux'
 import { Provider } from 'react-redux'
 import logger from 'redux-logger'
@@ -19,7 +19,6 @@ const store = createStore(
   },
   applyMiddleware(logger)
 )
-window.store = store
 const App = () => {
   return (
     <Provider store={store}>
@@ -40,7 +39,18 @@ const App = () => {
           </Nav>
         </Navbar>
         <Modal />
-        <MapEditor />
+        <Col xs={4}>
+          <h3>Current slide:</h3>
+          <i>View not set.</i>{' '}
+          <button>Set view</button>
+          <br />
+          <button>Add wall</button>
+          <br />
+          <button>Add sprite</button>
+        </Col>
+        <Col xs={8}>
+          <MapEditor />
+        </Col>
       </div>
     </Provider>
   )
