@@ -83,8 +83,14 @@ class MapEditor extends React.Component {
     )
   }
 }
-export default connect(state => ({
-  walls: (state.worlds.array.find(
-    world => world.id === state.worlds.selectedId
-  ) || {}).walls || []
-}))(MapEditor)
+export default connect(state => {
+  const selectedSlide = state.slides.array.find(
+    ({id}) => id === state.slides.selectedId
+  )
+  const worldOfSelectedSlide = state.worlds.array.find(
+    ({id}) => id === selectedSlide.worldId
+  )
+  return {
+    walls: (worldOfSelectedSlide || {}).walls || []
+  }
+})(MapEditor)
