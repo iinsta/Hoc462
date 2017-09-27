@@ -22,23 +22,6 @@ class AddSlide extends React.Component {
     this.worldIdInputControlId = _.uniqueId('id_')
     this.worldNameInputControlId = _.uniqueId('id_')
   }
-  handleSelectWorld (e) {
-    const formData = new window.FormData(this.form)
-    const worldId = formData.get('worldId')
-    if (worldId === 'CREATE_NEW') {
-      this.setState({ createNewWorld: true })
-    } else {
-      this.setState({ createNewWorld: false })
-    }
-  }
-  componentDidUpdate () {
-    const worldNameElement = document.querySelector(
-      '#' + this.worldNameInputControlId
-    )
-    if (worldNameElement !== null) {
-      worldNameElement.name = 'worldName'
-    }
-  }
   addSlide () {
     const { dispatch } = this.props
     const formData = new window.FormData(this.form)
@@ -73,14 +56,40 @@ class AddSlide extends React.Component {
       dispatch(closeModal())
     }
   }
-  componentDidMount () {
+  addNamesToFormFields () {
     document.querySelector(
       '#' + this.slideNameInputControlId
     ).name = 'slideName'
     document.querySelector('#' + this.worldIdInputControlId).name = 'worldId'
+    const worldNameElement = document.querySelector(
+      '#' + this.worldNameInputControlId
+    )
+    if (worldNameElement !== null) {
+      worldNameElement.name = 'worldName'
+    }
+  }
+  componentDidMount () {
+    this.addNamesToFormFields()
+  }
+  componentDidUpdate () {
+    this.addNamesToFormFields()
+  }
+  handleSelect () {
+    const formData = new window.FormData(this.form)
+    if (formData.get('worldId') === 'CREATE_NEW') {
+      this.setState({ createNewWorld: true })
+    } else {
+      this.setState({ createNewWorld: false })
+    }
   }
   render () {
     const { dispatch, worlds, selectedWorldId } = this.props
+    let defaultValue
+    if (worlds.length === 0 || this.state.createNewWorld) {
+      defaultValue = 'CREATE_NEW'
+    } else {
+      defaultValue = selectedWorldId
+    }
     return (
       <div>
         <Modal.Header>
@@ -106,14 +115,13 @@ class AddSlide extends React.Component {
               <FormControl
                 componentClass='select'
                 placeholder='World'
-                onChange={e => this.handleSelectWorld(e)}
+                defaultValue={defaultValue}
+                onChange={() => { this.handleSelect() }}
               >
-                <option value='EMPTY' selected disabled>Choose a world</option>
                 {worlds.map(world => (
                   <option
                     value={world.id}
                     key={world.id}
-                    selected={world.id === selectedWorldId}
                     >
                     {world.name}
                   </option>
@@ -121,15 +129,15 @@ class AddSlide extends React.Component {
                 <option value='CREATE_NEW'>Create new...</option>
               </FormControl>
             </FormGroup>
-            {this.state.createNewWorld && (
-            <FormGroup
-              controlId={this.worldNameInputControlId}
-              validationState={this.state.worldNameValidationState}
-                  >
-              <ControlLabel>World name: </ControlLabel>
-              <FormControl type='text' />
-            </FormGroup>
-                )}
+            {defaultValue === 'CREATE_NEW' && (
+              <FormGroup
+                controlId={this.worldNameInputControlId}
+                validationState={this.state.worldNameValidationState}
+              >
+                <ControlLabel>World name: </ControlLabel>
+                <FormControl type='text' />
+              </FormGroup>
+            )}
           </form>
         </Modal.Body>
         <Modal.Footer>

@@ -1,6 +1,7 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import THREELib from 'three-js'
+import { addWall } from '../../actions'
 const THREE = THREELib()
 class Grid extends React.Component {
   componentDidMount () {
@@ -29,13 +30,8 @@ class Grid extends React.Component {
         const startY = Math.max(rectangle.start.y, rectangle.end.y)
         const endX = Math.min(rectangle.start.x, rectangle.end.x)
         const endY = Math.min(rectangle.start.y, rectangle.end.y)
-        dispatch({
-          type: 'WALL_ADDED',
-          payload: {
-            start: { x: startX, y: startY },
-            end: { x: endX, y: endY }
-          }
-        })
+        dispatch(addWall(startX, startY, endX, endY, this.props.worldId))
+        // this.props.worldId instead of worldId because it changes.
       })
     }
     onDrag(this.object3d, (intersects, phase) => {
@@ -73,4 +69,10 @@ class Grid extends React.Component {
     return null
   }
 }
-export default connect()(Grid)
+export default connect(state => {
+  return {
+    worldId: (state.slides.array.find(
+      ({id}) => id === state.slides.selectedId
+    ) || {}).worldId
+  }
+})(Grid)

@@ -91,6 +91,7 @@ export default connect(state => {
     ({id}) => id === selectedSlide.worldId
   )
   return {
-    walls: (worldOfSelectedSlide || {}).walls || []
+    walls: (worldOfSelectedSlide || {}).walls || [],
+    worldId: (selectedSlide || {}).worldId
   }
 })(MapEditor)

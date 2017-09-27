@@ -4,7 +4,7 @@ import { Nav, Navbar, Col } from 'react-bootstrap'
 import { createStore, applyMiddleware } from 'redux'
 import { Provider } from 'react-redux'
 import logger from 'redux-logger'
-import { Modal, Slides, Worlds, MapEditor } from './components'
+import { Modal, Slides, Worlds, MapEditor, SlideSidebar } from './components'
 import reducer from './reducers'
 import './style.css'
 const store = createStore(
@@ -40,13 +40,7 @@ const App = () => {
         </Navbar>
         <Modal />
         <Col xs={4}>
-          <h3>Current slide:</h3>
-          <i>View not set.</i>{' '}
-          <button>Set view</button>
-          <br />
-          <button>Add wall</button>
-          <br />
-          <button>Add sprite</button>
+          <SlideSidebar />
         </Col>
         <Col xs={8}>
           <MapEditor />
