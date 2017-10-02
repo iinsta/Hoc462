@@ -1,8 +1,7 @@
 import React from 'react'
 import { connect } from 'react-redux'
-import THREELib from 'three-js'
+import * as THREE from 'three'
 import { addWall } from '../../actions'
-const THREE = THREELib()
 class Grid extends React.Component {
   componentDidMount () {
     const {

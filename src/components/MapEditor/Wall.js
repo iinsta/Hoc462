@@ -1,6 +1,5 @@
 import React from 'react'
-import THREELib from 'three-js'
-const THREE = THREELib()
+import * as THREE from 'three'
 class Wall extends React.Component {
   componentDidMount () {
     this.object3d = new THREE.Mesh(

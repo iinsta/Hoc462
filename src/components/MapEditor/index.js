@@ -2,12 +2,12 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 import { connect } from 'react-redux'
 import { Jumbotron } from 'react-bootstrap'
-import THREELib from 'three-js'
+import * as THREE from 'three'
 import Mouse3d from './Mouse3d'
 import Wall from './Wall'
 import GridTexture from './GridTexture'
 import Grid from './Grid'
-const THREE = THREELib([ 'OrbitControls' ])
+const OrbitControls = require('three-orbit-controls')(THREE)
 class MapEditor extends React.Component {
   componentWillMount () {
     const scene = this.scene = new THREE.Scene()
@@ -22,7 +22,7 @@ class MapEditor extends React.Component {
     const renderer = new THREE.WebGLRenderer({ antialias: true })
     renderer.setSize(500, 500) // canvas size will be changed later
     const canvas = this.canvas = renderer.domElement
-    const controls = new THREE.OrbitControls(camera, canvas)
+    const controls = new OrbitControls(camera, canvas)
     const animate = () => {
       const resizeCanvasToDisplaySize = () => {
         const canvas = renderer.domElement

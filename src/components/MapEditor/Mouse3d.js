@@ -1,5 +1,4 @@
-import THREELib from 'three-js'
-const THREE = THREELib()
+import * as THREE from 'three'
 const mousePosition = (element, event) => {
   const rect = element.getBoundingClientRect()
   const normal = {
