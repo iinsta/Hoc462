@@ -3,6 +3,7 @@
   "description": null,
   "version": "0.0.1",
   "dependencies": {
+    "bootstrap": "^3.3.7",
     "react": "15.5.3",
     "react-bootstrap": "0.31.2",
     "react-dom": "15.5.3",
